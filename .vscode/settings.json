@@ -1,4 +1,6 @@
 {
+  // To keep code within the Shortcuts window width
+  "black-formatter.args": ["--line-length", "60"],
   "editor.rulers": [
     {
       "color": "#ff0000aa",

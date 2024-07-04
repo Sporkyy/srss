@@ -1,7 +1,7 @@
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # https://pypi.org/project/macos-tags/
 # https://pypi.org/project/rarfile/
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 import os
 import shutil
@@ -72,7 +72,9 @@ for arg in args:
         tmp = Path(tempfile.mkdtemp())
         with rarfile.RarFile(src) as rf:
             rf.extractall(tmp)
-        with zipfile.ZipFile(cbz, mode="w", compression=zipfile.ZIP_STORED) as archive:
+        with zipfile.ZipFile(
+            cbz, mode="w", compression=zipfile.ZIP_STORED
+        ) as archive:
             for fn in os.listdir(tmp):
                 archive.write(tmp / fn, arcname=fn)
         shutil.rmtree(tmp)
