@@ -50,6 +50,11 @@ args = sys.argv[1:]
 for arg in args:
     src = Path(arg)
 
+    # Recompress if not already of type STORED
+    # zf = zipfile.ZipFile(src, mode="r")
+    # for info in zf.infolist():
+    #     print(info.compress_type)
+
     # Ensure the extension is lowercase
     if src.suffix.lower != src.suffix:
         dst = src.with_suffix(src.suffix.lower())
