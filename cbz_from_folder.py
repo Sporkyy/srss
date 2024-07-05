@@ -12,10 +12,20 @@ import zipfile
 from pathlib import Path
 
 from macos_tags import Color, Tag
-from macos_tags import add as add_tag
+from macos_tags import add as _add_tag
+
+
+def add_tag(tag, file):
+    _add_tag(tag, file=str(file))
+
+
+T_ok = Tag(name="Comic is ok", color=Color.GREEN)
+T_bad = Tag(name="Comic is bad", color=Color.RED)
+T_collision = Tag(
+    name="File name collision", color=Color.YELLOW
+)
 
 args = sys.argv[1:]
-
 
 for arg in args:
 
@@ -34,10 +44,7 @@ for arg in args:
     print(f"Checking is existing {cbz}")
 
     if cbz.exists():
-        add_tag(
-            Tag(name="Yellow", color=Color.YELLOW),
-            file=str(src),
-        )
+        add_tag(T_collision, file=src)
         continue
 
     print(f"Continuing to create {cbz}")
@@ -51,12 +58,7 @@ for arg in args:
     print(f"Verifying {cbz}")
 
     if zipfile.is_zipfile(cbz):
-        add_tag(
-            Tag(name="Green", color=Color.GREEN),
-            file=str(cbz),
-        )
+        add_tag(T_ok, file=cbz)
         shutil.rmtree(src)
     else:
-        add_tag(
-            Tag(name="Red", color=Color.RED), file=str(cbz)
-        )
+        add_tag(T_bad, file=cbz)

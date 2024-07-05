@@ -12,14 +12,40 @@ from pathlib import Path
 
 import rarfile
 from macos_tags import Color, Tag
-from macos_tags import add as add_tag
-from macos_tags import remove as remove_tag
+from macos_tags import add as _add_tag
+from macos_tags import remove as _remove_tag
+
+
+def add_tag(tag, file):
+    _add_tag(tag, file=str(file))
+
+
+def remove_tag(tag, file):
+    _remove_tag(tag, file=str(file))
+
+
+def tag_bad(file):
+    remove_tag(T_ok, file=src)
+    add_tag(T_bad, file=src)
+
+
+def tag_ok(file):
+    remove_tag(T_bad, file=src)
+    add_tag(T_ok, file=src)
+
+
+def tag_collision(file):
+    remove_tag(T_ok, file=src)
+    add_tag(T_collision, file=src)
+
+
+T_ok = Tag(name="Comic is ok", color=Color.GREEN)
+T_bad = Tag(name="Comic is bad", color=Color.RED)
+T_collision = Tag(
+    name="File name collision", color=Color.YELLOW
+)
 
 args = sys.argv[1:]
-
-tag_is_ok = Tag(name="Green", color=Color.GREEN)
-tag_is_bad = Tag(name="Red", color=Color.RED)
-tag_is_collision = Tag(name="Yellow", color=Color.YELLOW)
 
 for arg in args:
     src = Path(arg)
@@ -37,20 +63,8 @@ for arg in args:
     is_zip = zipfile.is_zipfile(src)
     is_rar = rarfile.is_rarfile(src)
 
-    def mark_bad():
-        remove_tag(tag_is_ok, file=str(src))
-        add_tag(tag_is_bad, file=str(src))
-
-    def mark_ok():
-        remove_tag(tag_is_bad, file=str(src))
-        add_tag(tag_is_ok, file=str(src))
-
-    def mark_collision():
-        remove_tag(tag_is_ok, file=str(src))
-        add_tag(tag_is_collision, file=str(src))
-
     if not (is_zip or is_rar):
-        mark_bad()
+        tag_bad(src)
         continue
 
     # Fix the extension
@@ -67,7 +81,7 @@ for arg in args:
     if is_rar:
         cbz = src.with_suffix(".cbz")
         if os.path.exists(cbz):
-            mark_collision()
+            tag_collision(src)
             continue
         tmp = Path(tempfile.mkdtemp())
         with rarfile.RarFile(src) as rf:
@@ -85,6 +99,6 @@ for arg in args:
 
     # Anything left should be valid
     if is_zip:
-        mark_ok()
+        tag_ok(src)
     else:
-        mark_bad()
+        tag_bad(src)
