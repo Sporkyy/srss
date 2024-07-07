@@ -3,7 +3,7 @@
 import os
 import re
 import sys
-from pathlib import PurePath
+from pathlib import Path
 
 from titlecase import titlecase
 
@@ -25,18 +25,17 @@ def most_frequent_char(str):
 args = sys.argv[1:]
 
 for arg in args:
-    src = PurePath(arg)
+    src = Path(arg)
     dst = src
 
     # Ensure there is whitespace somewhere
     if 0 == str.count(src.stem, " "):
-        probable_spaces = re.sub(r"[^-_\.]", "", src.stem)
-        if 0 < str.count(probable_spaces):
-            probable_space = most_frequent_char(
-                probable_spaces
-            )
+        space_cans = re.sub(r"[^-_\.]", "", src.stem)
+        print(space_cans)
+        if 0 < len(space_cans):
+            best_can = most_frequent_char(space_cans)
             dst = src.with_stem(
-                src.stem.replace(probable_space, " ")
+                str.strip(src.stem.replace(best_can, " "))
             )
 
     # Remove multiple spaces
@@ -47,9 +46,6 @@ for arg in args:
 
     # Ensure the extension is lowercase
     dst = dst.with_suffix(dst.suffix.lower())
-
-    # Remove leading and trailing whitespace
-    dst = str.strip(dst)
 
     if src != dst:
         print(f"Renaming {src} to {dst}")

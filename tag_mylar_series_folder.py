@@ -33,7 +33,7 @@ for arg in args:
     for fn in os.listdir(src):
         if fn == "series.json":
             did_find_sj = True
-        if str.lower(fn.suffix) in [".cbz", ".cbr"]:
+        if fn.suffix.lower() in [".cbz", ".cbr"]:
             did_find_comic = True
         if did_find_comic and did_find_sj:
             break

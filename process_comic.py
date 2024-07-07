@@ -1,29 +1,56 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # https://pypi.org/project/macos-tags/
-# https://pypi.org/project/rarfile/
+# https://pypi.org/project/patool/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+# MARK: Imports
+
 import os
-import shutil
+
+# import shutil
 import sys
-import tempfile
+
+# import tempfile
 import zipfile
 from pathlib import Path
 
+import patoolib
 import rarfile
 from macos_tags import Color, Tag
 from macos_tags import add as _add_tag
 from macos_tags import remove as _remove_tag
+from patoolib import test_archive as _test_archive
+
+# MARK: Homebrew PATH
+os.environ["PATH"] = (
+    r"/usr/local/bin" + os.pathsep + os.environ["PATH"]
+)
+os.environ["PATH"] = (
+    r"/opt/homebrew/bin" + os.pathsep + os.environ["PATH"]
+)
+os.environ["PATH"] += os.pathsep + r"/opt/homebrew/sbin"
+
+
+# MARK: Import Overrides
+def test_archive(file):
+    if not isinstance(file, str):
+        file = str(file)
+    return _test_archive(file)
 
 
 def add_tag(tag, file):
-    _add_tag(tag, file=str(file))
+    if not isinstance(file, str):
+        file = str(file)
+    return _add_tag(tag, file=file)
 
 
 def remove_tag(tag, file):
-    _remove_tag(tag, file=str(file))
+    if not isinstance(file, str):
+        file = str(file)
+    return _remove_tag(tag, file=file)
 
 
+# MARK: Functions
 def tag_bad(file):
     remove_tag(T_ok, file=src)
     add_tag(T_bad, file=src)
@@ -39,71 +66,69 @@ def tag_collision(file):
     add_tag(T_collision, file=src)
 
 
-T_ok = Tag(name="Comic is ok", color=Color.GREEN)
-T_bad = Tag(name="Comic is bad", color=Color.RED)
+# MARK: Tags
+T_ok = Tag(
+    name="Comic is ok",
+    color=Color.GREEN,
+)
+T_bad = Tag(
+    name="Comic is bad",
+    color=Color.RED,
+)
 T_collision = Tag(
-    name="File name collision", color=Color.YELLOW
+    name="File name collision",
+    color=Color.YELLOW,
 )
 
 args = sys.argv[1:]
 
+# MARK: The Loop
 for arg in args:
     src = Path(arg)
 
-    # Recompress if not already of type STORED
-    # zf = zipfile.ZipFile(src, mode="r")
-    # for info in zf.infolist():
-    #     print(info.compress_type)
-
     # Ensure the extension is lowercase
-    if src.suffix.lower != src.suffix:
+    if src.suffix.lower() != src.suffix:
+        print(f"Downcasing {src.suffix}")
         dst = src.with_suffix(src.suffix.lower())
         os.rename(src, dst)
         src = dst
 
     # Skip if not a comic book archive
     if not src.suffix in [".cbz", ".cbr"]:
+        print(f"Not a comic {src.stem}")
         continue
 
-    is_zip = zipfile.is_zipfile(src)
-    is_rar = rarfile.is_rarfile(src)
-
-    if not (is_zip or is_rar):
+    res = None
+    try:
+        res = test_archive(src)
+    except Exception as e:
         tag_bad(src)
         continue
 
     # Fix the extension
-    if is_zip and ".rar" == src.suffix:
+    if ".rar" == src.suffix and zipfile.is_zipfile(src):
         dest = src.with_suffix(".cbz")
         os.rename(src, dest)
         src = dest
-    elif is_rar and ".zip" == src.suffix:
+    elif ".zip" == src.suffix and rarfile.is_rarfile(src):
         dest = src.with_suffix(".cbr")
         os.rename(src, dest)
         src = dest
 
     # Extract and repack CBRs
-    if is_rar:
+    if ".cbr" == src.suffix:
         cbz = src.with_suffix(".cbz")
         if os.path.exists(cbz):
             tag_collision(src)
             continue
-        tmp = Path(tempfile.mkdtemp())
-        with rarfile.RarFile(src) as rf:
-            rf.extractall(tmp)
-        with zipfile.ZipFile(
-            cbz, mode="w", compression=zipfile.ZIP_STORED
-        ) as archive:
-            for fn in os.listdir(tmp):
-                archive.write(tmp / fn, arcname=fn)
-        shutil.rmtree(tmp)
-        is_zip = zipfile.is_zipfile(cbz)
-        if is_zip:
+        patoolib.repack_archive(src, cbz)
+        if zipfile.is_zipfile(cbz):
             os.remove(src)
-            src = cbz
+        src = cbz
 
-    # Anything left should be valid
-    if is_zip:
-        tag_ok(src)
-    else:
+    try:
+        test_archive(src)
+    except:
         tag_bad(src)
+    else:
+        tag_ok(src)

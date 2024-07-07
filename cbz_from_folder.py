@@ -19,10 +19,17 @@ def add_tag(tag, file):
     _add_tag(tag, file=str(file))
 
 
-T_ok = Tag(name="Comic is ok", color=Color.GREEN)
-T_bad = Tag(name="Comic is bad", color=Color.RED)
+T_ok = Tag(
+    name="Comic is ok",
+    color=Color.GREEN,
+)
+T_bad = Tag(
+    name="Comic is bad",
+    color=Color.RED,
+)
 T_collision = Tag(
-    name="File name collision", color=Color.YELLOW
+    name="File name collision",
+    color=Color.YELLOW,
 )
 
 args = sys.argv[1:]
@@ -50,7 +57,9 @@ for arg in args:
     print(f"Continuing to create {cbz}")
 
     with zipfile.ZipFile(
-        cbz, mode="w", compression=zipfile.ZIP_STORED
+        cbz,
+        mode="w",
+        compression=zipfile.ZIP_STORED,
     ) as archive:
         for fn in os.listdir(src):
             archive.write(src / fn, arcname=fn)
