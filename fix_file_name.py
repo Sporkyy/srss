@@ -3,52 +3,49 @@
 import os
 import re
 import sys
-from pathlib import Path
+from collections import Counter
+from pathlib import PurePath
 
 from titlecase import titlecase
 
 
-def cnt_chars(str):
-    cnts = {}
-    for char in list(str):
-        if char not in cnts:
-            cnts[char] = 0
-        cnts[char] += 1
-    return cnts
-
-
-def most_frequent_char(str):
-    cnts = cnt_chars(str)
+def most_frequent_char(str: str) -> str:
+    cnts = Counter(str)
     return max(cnts, key=cnts.get)
 
 
 args = sys.argv[1:]
 
+# MARK: The Loop
 for arg in args:
-    src = Path(arg)
-    dst = src
+    src = PurePath(arg)
+    dst_stem = src.stem
+    dst_suffix = src.suffix
 
-    # Ensure there is whitespace somewhere
-    if 0 == str.count(src.stem, " "):
-        space_cans = re.sub(r"[^-_\.]", "", src.stem)
-        print(space_cans)
+    # Ensure no existing whitespace before adding some
+    if 0 == str.count(dst_stem, " "):
+        space_cans = re.sub(r"[^-_\.]", "", dst_stem)
+        print('Space Candidates "{space_cans}"')
         if 0 < len(space_cans):
             best_can = most_frequent_char(space_cans)
-            dst = src.with_stem(
-                str.strip(src.stem.replace(best_can, " "))
-            )
+            dst_stem = dst_stem.replace(best_can, " ")
 
     # Remove multiple spaces
-    dst = dst.with_stem(re.sub(r"\s{2,}", " ", dst.stem))
+    dst_stem = re.sub(r"\s{2,}", " ", dst_stem)
 
     # Should probably be titlecase
-    dst = dst.with_stem(titlecase(dst.stem))
+    dst_stem = titlecase(dst_stem)
+
+    # Ensure no whitespace at the beginning or end
+    dst_stem = dst_stem.strip()
 
     # Ensure the extension is lowercase
-    dst = dst.with_suffix(dst.suffix.lower())
+    dst_suffix = dst_suffix.lower()
+
+    dst = src.with_name("{dst_stem}{dst_suffix}")
 
     if src != dst:
-        print(f"Renaming {src} to {dst}")
+        print("Renaming {src} to {dst}")
         os.rename(src, dst)
     else:
-        print(f"Skipping {src}")
+        print("Skipping {src}")

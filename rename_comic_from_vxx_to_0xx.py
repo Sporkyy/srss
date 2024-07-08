@@ -45,17 +45,28 @@
 import os
 import re
 import sys
-from pathlib import PurePath
+from pathlib import Path
 
 args = sys.argv[1:]
 
 for arg in args:
-    src = PurePath(arg)
-    dst = src.with_stem(
-        re.sub(r"\bv(\d{2})\b", r"0\1", src.stem)
-    )
+    src = Path(arg)
+    dst_stem = src.stem
+
+    if not src.is_file():
+        print("Not a file {src}")
+        continue
+
+    if src.suffix.lower() not in [".cbz", ".cbr"]:
+        print("Not a comic {src}")
+        continue
+
+    dst_stem = re.sub(r"\bv(\d{2})\b", r"0\1", dst_stem)
+
+    dst = src.with_stem(dst_stem)
+
     if src != dst:
-        print(f"Renaming {src} to {dst}")
+        print("Renaming {src} to {dst}")
         os.rename(src, dst)
     else:
-        print(f"Skipping {src}")
+        print("Skipping {src}")

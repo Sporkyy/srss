@@ -6,5 +6,6 @@
       "color": "#ff0000aa",
       "column": 60
     }
-  ]
+  ],
+  "python.analysis.typeCheckingMode": "basic"
 }

@@ -1,25 +1,18 @@
 import os
 import sys
-from pathlib import Path
+from pathlib import Path, PurePath
 
 from macos_tags import Color, Tag
-from macos_tags import add as _add_tag
-from macos_tags import remove as _remove_tag
+from macos_tags import add as add_tag
+from macos_tags import remove as remove_tag
 
-
-def add_tag(tag, file):
-    _add_tag(tag, file=str(file))
-
-
-def remove_tag(tag, file):
-    _remove_tag(tag, file=str(file))
-
-
+# MARK: Tags
 T_no_sj = Tag(name="No series.json", color=Color.RED)
 T_no_comic = Tag(name="No comic", color=Color.RED)
 
 args = sys.argv[1:]
 
+# MARK: The Loop
 for arg in args:
     src = Path(arg)
 
@@ -31,7 +24,8 @@ for arg in args:
     did_find_comic = False
 
     for fn in os.listdir(src):
-        if fn == "series.json":
+        fn = PurePath(fn)
+        if "series.json" == fn.name.lower():
             did_find_sj = True
         if fn.suffix.lower() in [".cbz", ".cbr"]:
             did_find_comic = True
@@ -39,11 +33,11 @@ for arg in args:
             break
 
     if not did_find_sj:
-        add_tag(T_no_sj, file=src)
+        add_tag(T_no_sj, file=str(src))
     else:
-        remove_tag(T_no_sj, file=src)
+        remove_tag(T_no_sj, file=str(src))
 
     if not did_find_comic:
-        add_tag(T_no_comic, file=src)
+        add_tag(T_no_comic, file=str(src))
     else:
-        remove_tag(T_no_comic, file=src)
+        remove_tag(T_no_comic, file=str(src))
