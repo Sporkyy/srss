@@ -8,11 +8,12 @@
 import os
 import shutil
 import sys
-import zipfile
 from pathlib import Path
+from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
 from macos_tags import add as _add_tag
+from patoolib import create_archive
 
 
 def add_tag(tag, file):
@@ -56,17 +57,18 @@ for arg in args:
 
     print(f"Continuing to create {cbz}")
 
-    with zipfile.ZipFile(
-        cbz,
-        mode="w",
-        compression=zipfile.ZIP_STORED,
-    ) as archive:
-        for fn in os.listdir(src):
-            archive.write(src / fn, arcname=fn)
+    # with zipfile.ZipFile(
+    #     cbz,
+    #     mode="w",
+    #     compression=zipfile.ZIP_STORED,
+    # ) as archive:
+    #     for fn in os.listdir(src):
+    #         archive.write(src / fn, arcname=fn)
+
+    create_archive(str(cbz), [str(src)])
 
     print(f"Verifying {cbz}")
-
-    if zipfile.is_zipfile(cbz):
+    if is_zipfile(cbz):
         add_tag(T_ok, file=cbz)
         shutil.rmtree(src)
     else:

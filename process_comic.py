@@ -9,17 +9,17 @@ import os
 
 # import shutil
 import sys
-
-# import tempfile
-import zipfile
 from pathlib import Path
 
+# import tempfile
+from zipfile import is_zipfile
+
 import patoolib
-import rarfile
 from macos_tags import Color, Tag
 from macos_tags import add as _add_tag
 from macos_tags import remove as _remove_tag
 from patoolib import test_archive as _test_archive
+from rarfile import is_rarfile
 
 # MARK: Homebrew PATH
 os.environ["PATH"] = (
@@ -98,37 +98,35 @@ for arg in args:
         print(f"Not a comic {src.stem}")
         continue
 
-    res = None
     try:
-        res = test_archive(src)
+        test_archive(src)
     except Exception as e:
         tag_bad(src)
         continue
 
     # Fix the extension
-    if ".rar" == src.suffix and zipfile.is_zipfile(src):
+    if ".rar" == src.suffix and is_zipfile(src):
         dest = src.with_suffix(".cbz")
         os.rename(src, dest)
         src = dest
-    elif ".zip" == src.suffix and rarfile.is_rarfile(src):
+    elif ".zip" == src.suffix and is_rarfile(src):
         dest = src.with_suffix(".cbr")
         os.rename(src, dest)
         src = dest
 
-    # Extract and repack CBRs
+    # Repack CBRs
     if ".cbr" == src.suffix:
         cbz = src.with_suffix(".cbz")
         if os.path.exists(cbz):
             tag_collision(src)
             continue
         patoolib.repack_archive(src, cbz)
-        if zipfile.is_zipfile(cbz):
+        if is_zipfile(cbz):
             os.remove(src)
-        src = cbz
+            src = cbz
+        else:
+            tag_bad(cbz)
+            continue
 
-    try:
-        test_archive(src)
-    except:
-        tag_bad(src)
-    else:
-        tag_ok(src)
+    # Tag the comic as ok
+    tag_ok(src)
