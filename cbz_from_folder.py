@@ -8,6 +8,7 @@
 # MARK: Imports
 import os
 import shutil
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -49,6 +50,32 @@ for arg in args:
     if cbz.exists():
         add_tag(T_collision, file=str(src))
         continue
+
+    # Add in the parity files
+    # par2 c -t0 -r10 -d./ -- Recovery.par2
+    # set -l recovery_path "$temp_dir_recovery/Recovery.par2"
+    # set -l file_list (find "$temp_dir_recovery" -type f | gshuf)
+    # par2 c -B"$temp_dir_recovery" -r10 -q "$recovery_path" $file_list
+    # recovery_path = src / "Recovery.par2"
+    # file_list = []
+    # for root, _, files in os.walk(src):
+    #     for file in files:
+    #         file_list.append(os.path.join(root, file))
+    # print(" ".join([f'"{fn}"' for fn in file_list]))
+    # os.system(
+    #     f"par2 c -B\"{src}\" -r10 -q \"{recovery_path}\" {' '.join(file_list)}"
+    # )
+    # x = [
+    #     "par2",
+    #     "c",
+    #     f'-B"{src}"',
+    #     "-r10",
+    #     "-q",
+    #     f'"{recovery_path}"',
+    # ].extend([f'"{fn}"' for fn in file_list])
+    # print(x)
+    # # subprocess.Popen(x)
+    # continue
 
     with zipfile.ZipFile(
         cbz,
