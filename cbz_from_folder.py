@@ -5,6 +5,7 @@
 #   - https://pypi.org/project/macos-tags/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+# MARK: Imports
 import os
 import shutil
 import sys
@@ -38,16 +39,13 @@ for arg in args:
 
     src = Path(arg)
 
-    print("Esuring a directory {src}")
-
-    # Skip if not a directory
+    # Ensure a directory
     if not src.is_dir():
         continue
 
     cbz = src.with_suffix(".cbz")
 
-    print("Ensuring no existing {cbz}")
-
+    # Ensure no collision
     if cbz.exists():
         add_tag(T_collision, file=str(src))
         continue
@@ -60,9 +58,9 @@ for arg in args:
         for fn in os.listdir(src):
             archive.write(src / fn, arcname=fn)
 
-    print("Verifying {cbz}")
     if is_zipfile(cbz):
         add_tag(T_ok, file=str(cbz))
         shutil.rmtree(src)
     else:
+        print(f"Invalid {cbz}")
         add_tag(T_bad, file=str(cbz))

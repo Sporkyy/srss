@@ -17,7 +17,7 @@ for arg in args:
         dst = src.with_stem(titlecase(src.stem))
 
     if src != dst:
-        print("Renaming {src} to {dst}")
+        print(f"Renaming {src} to {dst}")
         os.rename(src, dst)
     else:
-        print("Skipping {src}")
+        print(f"Skipping {src}")

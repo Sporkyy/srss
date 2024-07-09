@@ -54,11 +54,11 @@ for arg in args:
     dst_stem = src.stem
 
     if not src.is_file():
-        print("Not a file {src}")
+        print(f"Not a file {src}")
         continue
 
     if src.suffix.lower() not in [".cbz", ".cbr"]:
-        print("Not a comic {src}")
+        print(f"Not a comic {src}")
         continue
 
     dst_stem = re.sub(r"\bv(\d{2})\b", r"0\1", dst_stem)
@@ -66,7 +66,7 @@ for arg in args:
     dst = src.with_stem(dst_stem)
 
     if src != dst:
-        print("Renaming {src} to {dst}")
+        print(f"Renaming {src} to {dst}")
         os.rename(src, dst)
     else:
-        print("Skipping {src}")
+        print(f"Skipping {src}")

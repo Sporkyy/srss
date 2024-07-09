@@ -64,32 +64,32 @@ for arg in args:
 
     # Ensure the extension is lowercase
     if src.suffix.lower() != src.suffix:
-        print("Downcasing {src.suffix}")
+        print(f"Downcasing {src.suffix}")
         dst = src.with_suffix(src.suffix.lower())
         os.rename(src, dst)
         src = dst
 
     # Skip if not a comic book archive
     if not src.suffix in [".cbz", ".cbr"]:
-        print("Not a comic {src.stem}")
+        print(f"Not a comic {src.stem}")
         continue
 
     is_zipfile = zipfile.is_zipfile(src)
     is_rarfile = rarfile.is_rarfile(src)
 
     if not is_zipfile and not is_rarfile:
-        print("Invalid archive {src.stem}")
+        print(f"Invalid archive {src.stem}")
         tag_bad(src)
         continue
 
     # Fix the extension
     if ".rar" == src.suffix and is_zipfile:
-        print("Fixing {src.suffix} extension {src.stem}")
+        print(f"Fixing {src.suffix} extension {src.stem}")
         dest = src.with_suffix(".cbz")
         os.rename(src, dest)
         src = dest
     elif ".zip" == src.suffix and is_rarfile:
-        print("Fixing {src.suffix} extension {src.stem}")
+        print(f"Fixing {src.suffix} extension {src.stem}")
         dest = src.with_suffix(".cbr")
         os.rename(src, dest)
         src = dest
