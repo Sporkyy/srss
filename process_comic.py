@@ -107,8 +107,13 @@ for arg in args:
         with ZipFile(
             cbz, "w", zipfile.ZIP_STORED
         ) as archive:
-            for fn in os.listdir(tmp):
-                archive.write(PP_tmp / fn, arcname=fn)
+            for root, _, files in os.walk(src):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arcname = os.path.relpath(
+                        file_path, src
+                    )
+                    archive.write(file_path, arcname)
         shutil.rmtree(tmp)
         is_zipfile = zipfile.is_zipfile(cbz)
         if is_zipfile:
