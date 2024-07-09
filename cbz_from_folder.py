@@ -55,8 +55,11 @@ for arg in args:
         mode="w",
         compression=zipfile.ZIP_STORED,
     ) as archive:
-        for fn in os.listdir(src):
-            archive.write(src / fn, arcname=fn)
+        for root, _, files in os.walk(src):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, src)
+                archive.write(file_path, arcname)
 
     if is_zipfile(cbz):
         add_tag(T_ok, file=str(cbz))

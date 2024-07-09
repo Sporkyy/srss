@@ -6,7 +6,6 @@ import re
 import sys
 from collections import Counter
 from pathlib import Path
-from typing import Collection
 
 from titlecase import titlecase
 
@@ -19,8 +18,11 @@ for arg in args:
 
     if src.is_file():
         dst_suffixes = dst.suffixes
+        print(f"Suffixes {dst_suffixes}")
         dst_suffixes_len = len(str.join("", dst_suffixes))
+        print(f"Suffixes Length {dst_suffixes_len}")
         dst_main = dst.name[:-dst_suffixes_len]
+        print(f"Main {dst_main}")
     else:
         dst_main = dst.name
 
@@ -43,8 +45,9 @@ for arg in args:
 
     if src.is_file():
         dst = dst.with_stem(dst_main)
-        # Ensure the extension is lowercase
-        dst = dst.with_suffix("".join(dst_suffixes))
+        # Ensure the suffix is lowercase
+        s_dst_suffixes = "".join(dst_suffixes).lower()
+        dst = dst.with_suffix(s_dst_suffixes)
     else:
         dst = dst.with_name(dst_main)
 
