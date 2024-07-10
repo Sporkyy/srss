@@ -1,11 +1,11 @@
+// I was thinking about keeping code within the Shortcuts window width
+// But, on second thought, nevermind
 {
-  // To keep code within the Shortcuts window width
-  "black-formatter.args": ["--line-length", "60"],
-  "editor.rulers": [
-    {
-      "color": "#ff0000aa",
-      "column": 60
-    }
-  ],
-  "python.analysis.typeCheckingMode": "basic"
+  // "black-formatter.args": ["--line-length", "60"],
+  // "editor.rulers": [
+  //   {
+  //     "color": "#ff0000aa",
+  //     "column": 60
+  //   }
+  // ],
 }

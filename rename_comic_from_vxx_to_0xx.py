@@ -1,4 +1,4 @@
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Rename Comic from vXX to 0XX
 #
 # This script is for performing the common comic book
@@ -40,7 +40,9 @@
 #   Run as Administrator: ◼️ (unticked)
 #
 # Step 7: Copy+Paste in the Python Script
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+# MARK: Imports
 
 import os
 import re
@@ -49,9 +51,10 @@ from pathlib import Path
 
 args = sys.argv[1:]
 
+# MARK: The Loop
+
 for arg in args:
     src = Path(arg)
-    dst_stem = src.stem
 
     if not src.is_file():
         print(f"Not a file {src}")
@@ -61,9 +64,9 @@ for arg in args:
         print(f"Not a comic {src}")
         continue
 
-    dst_stem = re.sub(r"\bv(\d{2})\b", r"0\1", dst_stem)
+    dst = src
 
-    dst = src.with_stem(dst_stem)
+    dst = dst.with_stem(re.sub(r"\bv(\d{2})\b", r"0\1", dst.stem))
 
     if src != dst:
         print(f"Renaming {src} to {dst}")

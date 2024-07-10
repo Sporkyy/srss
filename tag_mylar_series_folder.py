@@ -1,3 +1,7 @@
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# macos_tags
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 import os
 import sys
 from pathlib import Path, PurePath
@@ -14,16 +18,17 @@ args = sys.argv[1:]
 
 # MARK: The Loop
 for arg in args:
-    src = Path(arg)
+
+    arg = Path(arg)
 
     # Skip if not a directory
-    if not src.is_dir():
+    if not arg.is_dir():
         continue
 
     did_find_sj = False
     did_find_comic = False
 
-    for fn in os.listdir(src):
+    for fn in os.listdir(arg):
         fn = PurePath(fn)
         if "series.json" == fn.name.lower():
             did_find_sj = True
@@ -33,11 +38,11 @@ for arg in args:
             break
 
     if not did_find_sj:
-        add_tag(T_no_sj, file=str(src))
+        add_tag(T_no_sj, file=str(arg))
     else:
-        remove_tag(T_no_sj, file=str(src))
+        remove_tag(T_no_sj, file=str(arg))
 
     if not did_find_comic:
-        add_tag(T_no_comic, file=str(src))
+        add_tag(T_no_comic, file=str(arg))
     else:
-        remove_tag(T_no_comic, file=str(src))
+        remove_tag(T_no_comic, file=str(arg))

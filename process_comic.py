@@ -1,7 +1,7 @@
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # https://pypi.org/project/macos-tags/
 # Rarfile
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
 
@@ -9,38 +9,41 @@ import os
 import shutil
 import sys
 import tempfile
-import zipfile
-from operator import is_
 from pathlib import Path, PurePath
-from zipfile import ZipFile
+from zipfile import ZIP_STORED, ZipFile, is_zipfile
 
-import rarfile
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import remove as remove_tag
-from rarfile import RarFile
-
-# MARK: Homebrew PATH
-os.environ["PATH"] += os.pathsep + "/usr/local/bin"
-os.environ["PATH"] += os.pathsep + "/opt/homebrew/bin"
-os.environ["PATH"] += os.pathsep + "/opt/homebrew/sbin"
-
+from rarfile import RarFile, is_rarfile
 
 # MARK: Functions
+
+
+def add_path(path: str):
+    os.environ["PATH"] += os.pathsep + path
+
+
 def tag_bad(file: os.PathLike):
-    remove_tag(T_ok, file=str(src))
-    add_tag(T_bad, file=str(src))
+    remove_tag(T_ok, file=str(file))
+    add_tag(T_bad, file=str(file))
 
 
 def tag_ok(file: os.PathLike):
-    remove_tag(T_bad, file=str(src))
-    add_tag(T_ok, file=str(src))
+    remove_tag(T_bad, file=str(file))
+    add_tag(T_ok, file=str(file))
 
 
 def tag_collision(file: os.PathLike):
-    remove_tag(T_ok, file=str(src))
-    add_tag(T_collision, file=str(src))
+    remove_tag(T_ok, file=str(file))
+    add_tag(T_collision, file=str(file))
 
+
+# MARK: PATH
+
+add_path("/usr/local/bin")
+add_path("/opt/homebrew/bin")
+add_path("/opt/homebrew/sbin")
 
 # MARK: Tags
 T_ok = Tag(
@@ -74,57 +77,56 @@ for arg in args:
         print(f"Not a comic {src.stem}")
         continue
 
-    is_zipfile = zipfile.is_zipfile(src)
-    is_rarfile = rarfile.is_rarfile(src)
+    is_cbz = is_zipfile(src)
+    is_cbr = is_rarfile(src)
 
-    if not is_zipfile and not is_rarfile:
+    if not is_cbz and not is_cbr:
         print(f"Invalid archive {src.stem}")
         tag_bad(src)
         continue
 
     # Fix the extension
-    if ".rar" == src.suffix and is_zipfile:
-        print(f"Fixing {src.suffix} extension {src.stem}")
-        dest = src.with_suffix(".cbz")
-        os.rename(src, dest)
-        src = dest
-    elif ".zip" == src.suffix and is_rarfile:
-        print(f"Fixing {src.suffix} extension {src.stem}")
-        dest = src.with_suffix(".cbr")
-        os.rename(src, dest)
-        src = dest
+    if ".rar" == src.suffix and is_cbz:
+        src_cbr = src
+        print(f"Fixing {src_cbr.name} extension")
+        dst_cbz = src.with_suffix(".cbz")
+        os.rename(src_cbr, dst_cbz)
+        src = dst_cbz
+    elif ".zip" == src.suffix and is_cbr:
+        src_cbz = src
+        print(f"Fixing {src_cbz.name} extension")
+        dst_cbr = src_cbz.with_suffix(".cbr")
+        os.rename(src_cbz, dst_cbr)
+        src = dst_cbr
 
     # Repack CBRs
     if ".cbr" == src.suffix:
-        cbz = src.with_suffix(".cbz")
-        if os.path.exists(cbz):
-            tag_collision(src)
+        src_cbr = src
+        dst_cbz = src_cbr.with_suffix(".cbz")
+        if os.path.exists(dst_cbz):
+            tag_collision(src_cbr)
             continue
         tmp = tempfile.mkdtemp(prefix="cbz_from_cbr_")
         PP_tmp = PurePath(tmp)
-        with RarFile(src, "r") as archive:
+        with RarFile(src_cbr, "r") as archive:
             archive.extractall(tmp)
-        with ZipFile(
-            cbz, "w", zipfile.ZIP_STORED
-        ) as archive:
-            for root, _, files in os.walk(src):
+        with ZipFile(dst_cbz, "w", ZIP_STORED) as archive:
+            for start, _, files in os.walk(tmp):
                 for file in files:
-                    file_path = os.path.join(root, file)
-                    arcname = os.path.relpath(
-                        file_path, src
-                    )
+                    file_path = os.path.join(start, file)
+                    arcname = os.path.relpath(file_path, src_cbr)
                     archive.write(file_path, arcname)
         shutil.rmtree(tmp)
-        is_zipfile = zipfile.is_zipfile(cbz)
-        if is_zipfile:
-            os.remove(src)
-            src = cbz
+        is_cbz = is_zipfile(dst_cbz)
+        if is_cbz:
+            os.remove(src_cbr)
+            src = dst_cbz
         else:
-            tag_bad(cbz)
+            tag_bad(dst_cbz)
             continue
 
     # Tag the comic as ok
-    if is_zipfile:
+    if is_cbz:
         tag_ok(src)
     else:
         tag_bad(src)
