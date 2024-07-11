@@ -32,7 +32,7 @@ for arg in args:
 
     # Ensure no existing whitespace before adding some
     if 0 == str.count(dst_main, " "):
-        cans = re.sub(r"[^-_\.]", "", dst_main)
+        cans = re.sub(r"[^\_\.\-]+", "", dst_main)
         print(f'Space Candidates "{cans}"')
         if 0 < len(cans):
             best = Counter(cans).most_common(1)[0][0]
