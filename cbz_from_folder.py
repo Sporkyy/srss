@@ -9,15 +9,17 @@
 
 import os
 import shutil
-import subprocess
 import sys
 import zipfile
 from pathlib import Path
-from pprint import pprint
 from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
+
+# import subprocess
+# from pprint import pprint
+
 
 # MARK: Tags
 T_ok = Tag(
