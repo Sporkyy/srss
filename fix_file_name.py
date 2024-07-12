@@ -30,33 +30,31 @@ for arg in args:
     else:
         dst_main = dst.name
 
-    # Ensure no existing whitespace before adding some
-    if 0 == str.count(dst_main, " "):
-        cans = re.sub(r"[^\_\.\-]+", "", dst_main)
-        print(f'Space Candidates "{cans}"')
-        if 0 < len(cans):
-            best = Counter(cans).most_common(1)[0][0]
-            dst_main = dst_main.replace(best, " ")
+    # Replace probable space substitutes with spaces
+    cans = re.sub(r"[^\_\.\-]+", "", dst_main)
+    print(f'Space Candidates "{cans}"')
+    if 0 < len(cans):
+        best = Counter(cans).most_common(1)[0][0]
+        dst_main = dst_main.replace(best, " ")
 
-    # Remove multiple spaces
+    # Remove multiple subsequent spaces
     dst_main = re.sub(r"\s{2,}", " ", dst_main)
 
-    # Should probably be titlecase
+    # It should probably be titlecase
     dst_main = titlecase(dst_main)
 
     # Ensure no whitespace at the beginning or end
     dst_main = dst_main.strip()
 
+    # Recalculate the destination path after the changes above
     if src.is_file():
         dst = dst.with_stem(dst_main)
-        # Ensure the suffix is lowercase
-        s_dst_suffixes = "".join(dst_suffixes).lower()
-        dst = dst.with_suffix(s_dst_suffixes)
+        dst = dst.with_suffix("".join(dst_suffixes).lower())
     else:
         dst = dst.with_name(dst_main)
 
     if src != dst:
-        print(f"Renaming {src} to {dst}")
+        print(f"Renaming {src.name} to {dst.name}")
         os.rename(src, dst)
     else:
-        print(f"Skipping {src}")
+        print(f"Skipping {src.name}")

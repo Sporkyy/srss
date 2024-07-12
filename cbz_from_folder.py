@@ -8,11 +8,12 @@
 
 # MARK: Imports
 
-import os
 import shutil
-import subprocess
 import sys
+from os import chdir, remove
+from os.path import relpath
 from pathlib import Path
+from subprocess import run
 from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
@@ -50,70 +51,43 @@ for arg in args:
     # Ensure a directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if not src_dir.is_dir():
+        print(f"🛑 Not a directory {src_dir.name}")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Ensure no collision
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if dst_cbz.exists():
+        print(f"🛑 Existing {dst_cbz.name}")
         add_tag(T_collision, file=str(src_dir))
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # MARK: Add Parity Files
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    # Delete any existing Recovery (par2) records
-    subprocess.run(
-        [
-            "find",
-            src_dir,
-            "-type",
-            "f",
-            "-name",
-            "*.par2",
-            "-delete",
-        ]
-    )
-
-    # Find files to protect
-    find_output = subprocess.run(
-        [
-            "find",
-            src_dir,
-            "-type",
-            "f",
-        ],
-        capture_output=True,
-        text=True,
-    )
-
-    # Create Recovery (par2) records
-    part2_output = subprocess.run(
-        [
-            "par2",
-            "create",
-            "-aRecovery",
-            "-q",
-            "-r10",
-            "--",
-            *find_output.stdout.split("\n"),
-        ],
-        cwd=src_dir,
-    )
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
     try:
-        os.chdir(src_dir.parent)
-        create_archive(str(dst_cbz.name), [str(src_dir.name)])
+        src_files = run(
+            [
+                "find",
+                src_dir,
+                "-type",
+                "f",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        chdir(src_dir.parent)
+        create_archive(
+            str(dst_cbz.name),
+            [relpath(fn, src_dir.parent) for fn in src_files.stdout.splitlines()],
+        )
         if is_zipfile(dst_cbz):
-            print(f"✅ CBZ OK {dst_cbz}")
+            print(f"✅ CBZ OK {dst_cbz.name}")
             add_tag(T_ok, file=str(dst_cbz))
             shutil.rmtree(src_dir)
         else:
-            print(f"🛑 CBZ Invalid {dst_cbz}")
+            print(f"🛑 CBZ Invalid {dst_cbz.name}")
             add_tag(T_bad, file=str(dst_cbz))
     except Exception as e:
         print(f"❗️ Error: {e}")
         add_tag(T_bad, file=str(dst_cbz))
         if dst_cbz.exists():
-            os.remove(dst_cbz)
+            remove(dst_cbz)
