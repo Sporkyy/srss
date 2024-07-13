@@ -10,7 +10,7 @@
 
 import shutil
 import sys
-from os import chdir, remove
+from os import chdir, environ, pathsep, remove
 from os.path import relpath
 from pathlib import Path
 from subprocess import run
@@ -18,10 +18,14 @@ from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
-from patoolib import create_archive
+from patoolib import create_archive, test_archive
 
-# import subprocess
-# from pprint import pprint
+# MARK: PATH
+# To allow patoolib to find the binaries from Homebrew
+
+environ["PATH"] += pathsep + "/usr/local/bin"
+environ["PATH"] += pathsep + "/opt/homebrew/bin"
+environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 
 # MARK: Tags
@@ -63,6 +67,8 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # Create the CBZ
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         src_files = run(
             [
@@ -79,15 +85,22 @@ for arg in args:
             str(dst_cbz.name),
             [relpath(fn, src_dir.parent) for fn in src_files.stdout.splitlines()],
         )
-        if is_zipfile(dst_cbz):
-            print(f"✅ CBZ OK {dst_cbz.name}")
-            add_tag(T_ok, file=str(dst_cbz))
-            shutil.rmtree(src_dir)
-        else:
-            print(f"🛑 CBZ Invalid {dst_cbz.name}")
-            add_tag(T_bad, file=str(dst_cbz))
     except Exception as e:
         print(f"❗️ Error: {e}")
         add_tag(T_bad, file=str(dst_cbz))
         if dst_cbz.exists():
             remove(dst_cbz)
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # Test the CBZ
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    try:
+        test_archive(str(dst_cbz))
+        print(f"✅ CBZ OK {dst_cbz.name}")
+        add_tag(T_ok, file=str(dst_cbz))
+        shutil.rmtree(src_dir)
+    except Exception as e:
+        print(f"🛑 CBZ Invalid {dst_cbz.name}")
+        print(f"❗️ Error: {e}")
+        add_tag(T_bad, file=str(dst_cbz))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
