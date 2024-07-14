@@ -50,7 +50,7 @@ args = sys.argv[1:]
 for arg in args:
 
     src_dir = Path(arg)
-    dst_cbz = src_dir.with_suffix(".cbz")
+    dst_cbz = Path(f"{src_dir.name}.cbz")
 
     # Ensure a directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
