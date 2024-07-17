@@ -15,6 +15,9 @@ from titlecase import titlecase
 
 args = sys.argv[1:]
 
+# Sort the arguments in reverse order so deeper paths are processed first
+args.sort(reverse=True)
+
 # MARK: The Loop
 for arg in args:
     src = Path(arg)
