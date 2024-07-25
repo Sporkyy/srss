@@ -33,12 +33,21 @@ for arg in args:
     else:
         dst_main = dst.name
 
-    # Replace probable space substitutes with spaces
-    cans = re.sub(r"[^\_\.\-]+", "", dst_main)
-    print(f'Space Candidates "{cans}"')
-    if 0 < len(cans):
-        best = Counter(cans).most_common(1)[0][0]
-        dst_main = dst_main.replace(best, " ")
+        # Replace probable space substitutes with spaces
+        # cans = re.sub(r"[^\_\.\-]+", "", dst_main)
+        # print(f'Space Candidates "{cans}"')
+        # if 0 < len(cans):
+        #     best = Counter(cans).most_common(1)[0][0]
+        #     dst_main = dst_main.replace(best, " ")
+
+    if not " " in dst_main:
+        print(f'No spaces "{dst_main}"')
+        if re.search(r"[0-9a-z]_[0-9a-z]", dst_main, re.IGNORECASE):
+            dst_main = dst_main.replace("_", " ")
+        elif re.search(r"[0-9a-z]\.[0-9a-z]", dst_main, re.IGNORECASE):
+            dst_main = dst_main.replace(".", " ")
+        elif re.search(r"[0-9a-z]-[0-9a-z]", dst_main, re.IGNORECASE):
+            dst_main = dst_main.replace("-", " ")
 
     # Remove multiple subsequent spaces
     dst_main = re.sub(r"\s{2,}", " ", dst_main)
