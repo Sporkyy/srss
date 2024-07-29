@@ -15,15 +15,17 @@ from macos_tags import remove as remove_tag
 
 # MARK: Tags
 T_has_no_movie = Tag(name="Has no movie", color=Color.RED)
-T_has_multiple_movies = Tag(name="Has multiple movies", color=Color.RED)
+T_has_multiple_movies_in_root = Tag(name="Has multiple movies", color=Color.RED)
 T_has_behind_the_scenes = Tag(name="Has 'Behind the Scenes'", color=Color.BLUE)
 T_has_deleted_scenes = Tag(name="Has 'Deleted Scenes'", color=Color.BLUE)
 T_has_interviews = Tag(name="Has 'Interviews'", color=Color.BLUE)
 T_has_other = Tag(name="Has 'Other'", color=Color.BLUE)
-T_has_scenes = Tag(name="has 'Scenes'", color=Color.BLUE)
-
+T_has_scenes = Tag(name="has 'Scenes'", color=Color.BLUE)¸
+T_has_shorts = Tag(name="has 'Scenes'", color=Color.BLUE)¸
 
 args = sys.argv[1:]
+
+movie_suffixes = [".avi", ".mp4v", ".mkv", ".mov", ".mp4", ".webm"]
 
 # MARK: The Loop
 for arg in args:
@@ -44,7 +46,7 @@ for arg in args:
     for fn in os.listdir(arg):
         PP_fn = PurePath(fn)
         fn_suffix = PP_fn.suffix.lower()
-        if fn_suffix in [".mp4", ".mkv", ".mov", ".m4v"]:
+        if fn_suffix in movie_suffixes:
             cnt_movies += 1
 
 #     if not did_find_sj:
