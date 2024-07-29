@@ -3,7 +3,7 @@
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/
-#   * https://pypi.org/patool/
+#   * https://pypi.org/project/patool/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
