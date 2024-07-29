@@ -23,23 +23,15 @@ for arg in args:
     src = Path(arg)
     dst = src
 
+    # Decided against support for multiple suffixes after testing
     if src.is_file():
-        dst_suffixes = dst.suffixes
-        print(f"Suffixes {dst_suffixes}")
-        dst_suffixes_len = len(str.join("", dst_suffixes))
-        print(f"Suffixes Length {dst_suffixes_len}")
-        dst_main = dst.name[:-dst_suffixes_len]
-        print(f"Main {dst_main}")
+        dst_main = dst.stem
+        print(f'File main "{dst_main}"')
     else:
         dst_main = dst.name
+        print(f'Dir main "{dst_main}"')
 
-        # Replace probable space substitutes with spaces
-        # cans = re.sub(r"[^\_\.\-]+", "", dst_main)
-        # print(f'Space Candidates "{cans}"')
-        # if 0 < len(cans):
-        #     best = Counter(cans).most_common(1)[0][0]
-        #     dst_main = dst_main.replace(best, " ")
-
+    # Files with words delimited by dots outnumber files with multiple extensions
     if not " " in dst_main:
         print(f'No spaces "{dst_main}"')
         if re.search(r"[0-9a-z]_[0-9a-z]", dst_main, re.IGNORECASE):
@@ -61,12 +53,11 @@ for arg in args:
     # Recalculate the destination path after the changes above
     if src.is_file():
         dst = dst.with_stem(dst_main)
-        dst = dst.with_suffix("".join(dst_suffixes).lower())
     else:
         dst = dst.with_name(dst_main)
 
     if src != dst:
-        print(f"Renaming {src.name} to {dst.name}")
+        print(f'Renaming "{src.name}" to "{dst.name}"')
         os.rename(src, dst)
     else:
-        print(f"Skipping {src.name}")
+        print(f'Skipping "{src.name}"')
