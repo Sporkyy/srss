@@ -14,38 +14,40 @@ from macos_tags import add as add_tag
 from macos_tags import remove as remove_tag
 
 # MARK: Tags
-T_no_sj = Tag(name="No series.json", color=Color.RED)
-T_no_comic = Tag(name="No comic", color=Color.RED)
+T_no_sj = Tag(name="No series.json", color=Color.ORANGE)
+T_no_comics = Tag(name="No comics", color=Color.RED)
 
 args = sys.argv[1:]
 
 # MARK: The Loop
 for arg in args:
 
-    arg = Path(arg)
+    P_arg = Path(arg)
 
     # Skip if not a directory
-    if not arg.is_dir():
+    if not P_arg.is_dir():
         continue
 
     did_find_sj = False
     did_find_comic = False
 
-    for fn in os.listdir(arg):
-        fn = PurePath(fn)
-        if "series.json" == fn.name.lower():
+    for fn in os.listdir(P_arg):
+        P_fn = Path(fn)
+        if not P_fn.is_file():
+            continue
+        if "series.json" == P_fn.name.lower():
             did_find_sj = True
-        if fn.suffix.lower() in [".cbz", ".cbr"]:
+        if P_fn.suffix.lower() in [".cbz", ".cbr"]:
             did_find_comic = True
         if did_find_comic and did_find_sj:
             break
 
     if not did_find_sj:
-        add_tag(T_no_sj, file=str(arg))
+        add_tag(T_no_sj, file=arg)
     else:
-        remove_tag(T_no_sj, file=str(arg))
+        remove_tag(T_no_sj, file=arg)
 
     if not did_find_comic:
-        add_tag(T_no_comic, file=str(arg))
+        add_tag(T_no_comics, file=arg)
     else:
-        remove_tag(T_no_comic, file=str(arg))
+        remove_tag(T_no_comics, file=arg)
