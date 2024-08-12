@@ -1,13 +1,24 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Tag Mylar Series Folder
 #
+# ## Extras Directories
+#   * `behind the scenes`
+#   * `deleted scenes`
+#   * `featurettes`
+#   * `interviews`
+#   * `other`
+#   * `scenes`
+#   * `shorts`
+#   * `trailers
+#
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+# MARK: Imports
 import os
 import sys
-from pathlib import Path, PurePath
+from pathlib import Path
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -25,25 +36,27 @@ T_has_scenes = Tag(name="has 'Scenes'", color=Color.BLUE)
 T_has_shorts = Tag(name="has 'Shorts'", color=Color.BLUE)
 T_has_trailers = Tag(name="has 'Trailers'", color=Color.BLUE)
 
-movie_suffixes = [".avi", ".mp4v", ".mkv", ".mov", ".mp4", ".webm"]
 
-args = sys.argv[1:]
-
-
-def file_is_movie(file: Path) -> bool:
+# MARK: Functions
+def is_movie(file: Path) -> bool:
     if not file.is_file():
         return False
     fn_suffix = file.suffix.lower()
+    movie_suffixes = [".avi", ".m4v", ".mkv", ".mov", ".mp4", ".mpg", ".mpeg", ".webm"]
     return fn_suffix in movie_suffixes
 
 
 def dir_has_movie(dir: Path) -> bool:
+    if not dir.is_dir():
+        return False
     for fn in os.listdir(dir):
         P_fn = Path(fn)
-        if file_is_movie(P_fn):
+        if is_movie(P_fn):
             return True
     return False
 
+
+args = sys.argv[1:]
 
 # MARK: The Loop
 for arg in args:
@@ -66,7 +79,7 @@ for arg in args:
 
     for fn in os.listdir(P_arg):
         P_fn = Path(fn)
-        if file_is_movie(P_fn):
+        if is_movie(P_fn):
             cnt_movies += 1
         elif dir_has_movie(P_fn):
             if "behind the scenes" == P_fn.stem.lower():

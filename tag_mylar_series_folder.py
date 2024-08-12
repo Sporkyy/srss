@@ -5,9 +5,10 @@
 #   * https://pypi.org/project/macos-tags/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+# MARK: Imports
 import os
 import sys
-from pathlib import Path, PurePath
+from pathlib import Path
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
