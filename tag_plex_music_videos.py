@@ -21,7 +21,6 @@ from pathlib import Path
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import remove as remove_tag
-from zmq import has
 
 # MARK: Tags
 T_no_video_type = Tag(name="No Video Type", color=Color.RED)
