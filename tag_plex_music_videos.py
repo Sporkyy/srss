@@ -21,6 +21,7 @@ from pathlib import Path
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import remove as remove_tag
+from macos_tags import remove_all as remove_all_tags
 
 # MARK: Tags
 T_no_video_type = Tag(name="No Video Type", color=Color.RED)
@@ -64,7 +65,7 @@ for arg in args:
     if not is_movie(P_arg):
         continue
 
-    if has_video_type(P_arg):
-        remove_tag(T_no_video_type, file=arg)
-    else:
+    if not has_video_type(P_arg):
         add_tag(T_no_video_type, file=arg)
+    else:
+        remove_tag(T_no_video_type, file=arg)
