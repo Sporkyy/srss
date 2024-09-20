@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# CBZ from Folder
+# Create CBZ from Folder
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/

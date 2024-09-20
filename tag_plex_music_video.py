@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Plex Music Videos
+# Tag Plex Music Video
 #
 # ## Video Types
 #   * `-behindthescenes` (behind the scenes)
@@ -14,7 +14,6 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
-import os
 import sys
 from pathlib import Path
 
