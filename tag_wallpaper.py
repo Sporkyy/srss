@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Wallpaper by Resolution
+# Tag Wallpaper
 #
 # Resolutions are tagged by the nearest smallest "named" resolution.
 #
