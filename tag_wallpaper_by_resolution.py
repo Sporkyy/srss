@@ -53,6 +53,11 @@ T_square = Tag(name="Square", color=Color.PURPLE)
 
 
 # MARK: Functions
+
+
+# Shortcuts does this already when running the script in "production"
+# (Assuming the Input is configured properly for Quick Actions)
+# But doing it here helps when running it in "development"
 def is_image(file: Path) -> bool:
     if not file.is_file():
         return False
@@ -61,7 +66,7 @@ def is_image(file: Path) -> bool:
     return fn_suffix in image_suffixes
 
 
-# This shoudl work since `dict`s have a guaranteed order in Python 3.7+
+# This should work since `dict`s have a guaranteed order in Python 3.7+
 def get_tags_by_dimensions(width: int, height: int) -> list:
     tags = []
     if width < height:
@@ -102,4 +107,4 @@ for arg in args:
     # Get+set the tags
     for tag in get_tags_by_dimensions(width, height):
         add_tag(tag, file=arg)
-        print(f"🏷️Tagged {P_arg.name} with {tag.name}")
+        print(f"〘{tag.name}〛👉 {P_arg.name}")
