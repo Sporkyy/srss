@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Image by Resolution
+# Tag Image bye Resolution
 #
 # Resolutions are tagged by the nearest smallest "named" resolution.
 #
@@ -86,4 +86,4 @@ for arg in args:
 
     # Add the resolution tag
     add_tag(res_tag, file=arg)
-    print(f"Tagged {P_arg.name} with {res_tag.name}")
+    print(f"Tagged {arg} with {res_tag.name} ({res_tag.color})")
