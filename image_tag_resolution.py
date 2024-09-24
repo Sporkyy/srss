@@ -29,6 +29,7 @@ from os import remove
 from pathlib import Path
 from re import T
 
+import PIL
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
@@ -81,6 +82,17 @@ def get_tags_by_dimensions(width: int, height: int) -> list:
     return tags
 
 
+def pil_check(filename):
+    img = Image.open(filename)  # open the image file
+    img.verify()  # verify that it is a good image, without decoding it.. quite fast
+    img.close()
+
+    # Image manipulation is mandatory to detect few defects
+    img = Image.open(filename)  # open the image file
+    img.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    img.close()
+
+
 args = sys.argv[1:]
 
 # MARK: The Loop
@@ -90,6 +102,12 @@ for arg in args:
 
     # Skip if not an image
     if not is_image(P_arg):
+        continue
+
+    try:
+        pil_check(P_arg)
+    except Exception as e:
+        print(f"🚫 {P_arg.name} {e}")
         continue
 
     # Get the image resolution
