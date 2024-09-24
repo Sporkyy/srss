@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Process Comic
+# Comic: Process
 #
 # External Dependencies
 #   * https://pypi.org/project/macos-tags/

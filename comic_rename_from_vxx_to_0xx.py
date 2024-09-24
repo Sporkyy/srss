@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Rename Comic from vXX to 0XX
+# Comic: Rename from vXX to 0XX
 #
 # This script is for performing the common comic book renaming operation of changing the
 # volume number to a Mylar-compatible three-digit issue number. An operation most

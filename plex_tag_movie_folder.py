@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Mylar Series Folder
+# Plex: Tag Movie Folder
 #
 # ## Extras Directories
 #   * `behind the scenes`
@@ -9,7 +9,7 @@
 #   * `other`
 #   * `scenes`
 #   * `shorts`
-#   * `trailers
+#   * `trailers`
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/

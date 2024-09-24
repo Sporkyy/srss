@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Mylar Series Folder
+# Mylar: Tag Series Folder
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/

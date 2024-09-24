@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Create CBZ from Folder
+# Comic: Create From Folder
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/

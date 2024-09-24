@@ -1,5 +1,5 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Tag Plex Music Video
+# Plex: Tag Music Video
 #
 # ## Video Types
 #   * `-behindthescenes` (behind the scenes)
