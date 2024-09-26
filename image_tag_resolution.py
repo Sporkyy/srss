@@ -28,7 +28,6 @@ from ast import List
 from math import e
 from os import remove
 from pathlib import Path
-from re import T
 
 import PIL
 from macos_tags import Color, Tag
@@ -36,7 +35,8 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 from PIL import Image as ImageP
-from wand.image import Image as ImageW
+
+# from wand.image import Image as ImageW
 
 # MARK: Tags
 
@@ -68,12 +68,12 @@ def is_image(file: Path) -> bool:
     if not file.is_file():
         return False
     fn_suffix = file.suffix.lower()
-    image_suffixes = [".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tiff"]
+    image_suffixes = [".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tiff", ".webp"]
     if fn_suffix not in image_suffixes:
         return False
     try:
         pil_check(file)
-        magick_check(file)
+        # magick_check(file)
     except Exception as e:
         print(f"🚫 {file.name} {e}")
         add_tag(T_CORRUPT, file=arg)
@@ -118,15 +118,15 @@ def pil_check(filename: Path):
 
 
 # https://github.com/ftarlao/check-media-integrity/blob/master/check_mi.py
-def magick_check(filename: Path, flip=True):
-    # very useful for xcf, psd and aslo supports pdf
-    img = ImageW(filename=filename)
-    if flip:
-        temp = img.flip
-    else:
-        temp = img.make_blob(format="bmp")
-    img.close()
-    return temp
+# def magick_check(filename: Path, flip=True):
+#     # very useful for xcf, psd and aslo supports pdf
+#     img = ImageW(filename=filename)
+#     if flip:
+#         temp = img.flip
+#     else:
+#         temp = img.make_blob(format="bmp")
+#     img.close()
+#     return temp
 
 
 args = sys.argv[1:]
