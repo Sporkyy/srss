@@ -3,6 +3,12 @@
 #
 # Resolutions are tagged by the nearest smallest "named" resolution.
 #
+# ## How to configure `imagemagick` for `wand` in `fish`
+# ```fish
+# set -gx MAGICK_HOME /opt/homebrew/opt/imagemagick
+# fish_add_path {$MAGICK_HOME}/bin
+# ```
+#
 # ## Orientation Tags
 #   * Portrait
 #   * Landscape
@@ -35,8 +41,7 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 from PIL import Image as ImageP
-
-# from wand.image import Image as ImageW
+from wand.image import Image as ImageW
 
 # MARK: Tags
 
@@ -73,7 +78,7 @@ def is_image(file: Path) -> bool:
         return False
     try:
         pil_check(file)
-        # magick_check(file)
+        magick_check(file)
     except Exception as e:
         print(f"🚫 {file.name} {e}")
         add_tag(T_CORRUPT, file=arg)
@@ -118,15 +123,15 @@ def pil_check(filename: Path):
 
 
 # https://github.com/ftarlao/check-media-integrity/blob/master/check_mi.py
-# def magick_check(filename: Path, flip=True):
-#     # very useful for xcf, psd and aslo supports pdf
-#     img = ImageW(filename=filename)
-#     if flip:
-#         temp = img.flip
-#     else:
-#         temp = img.make_blob(format="bmp")
-#     img.close()
-#     return temp
+def magick_check(filename: Path, flip=True):
+    # very useful for xcf, psd and aslo supports pdf
+    img = ImageW(filename=filename)
+    if flip:
+        temp = img.flip
+    else:
+        temp = img.make_blob(format="bmp")
+    img.close()
+    return temp
 
 
 args = sys.argv[1:]

@@ -3,4 +3,4 @@ macos-tags>=1.5.0
 patool>=1.15.0
 pillow>=10.4.0
 titlecase>=2.4.0
-# Wand>=0.6.0
+Wand>=0.6.0
