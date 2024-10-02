@@ -29,17 +29,17 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 
 # MARK: Tags
-T_ok = Tag(
+T_OK = Tag(
     name="Comic is ok",
     color=Color.GREEN,
 )
 
-T_bad = Tag(
+T_BAD = Tag(
     name="Comic is bad",
     color=Color.RED,
 )
 
-T_collision = Tag(
+T_COLLISION = Tag(
     name="File name collision",
     color=Color.YELLOW,
 )
@@ -63,7 +63,7 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if dst_cbz.exists():
         print(f"🛑 Existing {dst_cbz.name}")
-        add_tag(T_collision, file=str(src_dir))
+        add_tag(T_COLLISION, file=str(src_dir))
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -87,7 +87,7 @@ for arg in args:
         )
     except Exception as e:
         print(f"❗️ Error: {e}")
-        add_tag(T_bad, file=str(dst_cbz))
+        add_tag(T_BAD, file=str(dst_cbz))
         if dst_cbz.exists():
             remove(dst_cbz)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -97,10 +97,10 @@ for arg in args:
     try:
         test_archive(str(dst_cbz))
         print(f"✅ CBZ OK {dst_cbz.name}")
-        add_tag(T_ok, file=str(dst_cbz))
+        add_tag(T_OK, file=str(dst_cbz))
         shutil.rmtree(src_dir)
     except Exception as e:
         print(f"🛑 CBZ Invalid {dst_cbz.name}")
         print(f"❗️ Error: {e}")
-        add_tag(T_bad, file=str(dst_cbz))
+        add_tag(T_BAD, file=str(dst_cbz))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

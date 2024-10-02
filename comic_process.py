@@ -31,30 +31,30 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 
 def tag_bad(file: PathLike):
-    remove_tag(T_ok, file=str(file))
-    add_tag(T_bad, file=str(file))
+    remove_tag(T_OK, file=str(file))
+    add_tag(T_BAD, file=str(file))
 
 
 def tag_ok(file: PathLike):
-    remove_tag(T_bad, file=str(file))
-    add_tag(T_ok, file=str(file))
+    remove_tag(T_BAD, file=str(file))
+    add_tag(T_OK, file=str(file))
 
 
 def tag_collision(file: PathLike):
-    remove_tag(T_ok, file=str(file))
-    add_tag(T_collision, file=str(file))
+    remove_tag(T_OK, file=str(file))
+    add_tag(T_COLLISON, file=str(file))
 
 
 # MARK: Tags
-T_ok = Tag(
+T_OK = Tag(
     name="Comic is ok",
     color=Color.GREEN,
 )
-T_bad = Tag(
+T_BAD = Tag(
     name="Comic is bad",
     color=Color.RED,
 )
-T_collision = Tag(
+T_COLLISON = Tag(
     name="File name collision",
     color=Color.YELLOW,
 )

@@ -15,6 +15,7 @@
 
 # MARK: Imports
 import sys
+from operator import itemgetter
 from pathlib import Path
 
 from macos_tags import Color, Tag
@@ -27,6 +28,7 @@ from macos_tags import remove as remove_tag
 # Probably a list of these out there somewhere
 MV_FILE_SUFFIXES = [
     ".avi",
+    ".divx",
     ".flv",
     ".m4v",
     ".mkv",
@@ -34,13 +36,12 @@ MV_FILE_SUFFIXES = [
     ".mp4",
     ".mpg",
     ".mpeg",
+    ".vob",
     ".webm",
 ]
 
 # Just to keep the lambdas to 1 line
-ORANGE = Color.ORANGE
-RED = Color.RED
-PURPLE = Color.PURPLE
+ORANGE, PURPLE, RED = itemgetter("ORANGE", "PURPLE", "RED")(Color)
 
 # MARK: Tags
 
@@ -83,13 +84,13 @@ for arg in args:
     if not is_movie(P_arg):
         continue
 
-    # Remove existing tags (TAGS defined in this script)
-    for tag in get_all_tags(file=P_arg.as_posix()):
+    # Remove existing tags from the tags defined in this script
+    for tag in get_all_tags(file=str(P_arg)):
         if tag in TAGS.keys():
-            remove_tag(tag, file=P_arg.as_posix())
+            remove_tag(tag, file=str(P_arg))
 
-    # Add tags based on the tests in TAGS (These are on-per-file)
+    # Add the applicable tags. Each is exclusive (one-per-file)
     for tag, check in TAGS.items():
         if check(get_stem_suffix(P_arg)) if callable(check) else check:
-            add_tag(tag, file=P_arg.as_posix())
-            break  # Only one tag per file
+            add_tag(tag, file=str(P_arg))
+            break  # Because only one tag per file

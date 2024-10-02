@@ -30,6 +30,7 @@
 # MARK: Imports
 import sys
 from ast import List
+from operator import itemgetter
 from pathlib import Path
 
 import PIL
@@ -44,19 +45,21 @@ from wand.image import Image as ImageW
 
 T_CORRUPT = Tag(name="Corrupt", color=Color.RED)
 
+BLUE, GREEN, YELLOW, PURPLE = itemgetter("BLUE", "GREEN", "YELLOW", "PURPLE")(Color)
+
 RES_TAGS = {
     # For tagging purposes the `(width, height)` tuple is the minimum resolution
-    Tag(name="8K", color=Color.BLUE): lambda w, h: 7680 < w and 4320 < h,
-    Tag(name="6K", color=Color.BLUE): lambda w, h: 6144 < w and 3456 < h,
-    Tag(name="5K", color=Color.GREEN): lambda w, h: 5120 < w and 2880 < h,
-    Tag(name="4K", color=Color.GREEN): lambda w, h: 3840 < w and 2160 < h,
-    Tag(name="1080p", color=Color.YELLOW): lambda w, h: 1920 < w and 1080 < h,
+    Tag(name="8K", color=BLUE): lambda w, h: 7680 < w and 4320 < h,
+    Tag(name="6K", color=BLUE): lambda w, h: 6144 < w and 3456 < h,
+    Tag(name="5K", color=GREEN): lambda w, h: 5120 < w and 2880 < h,
+    Tag(name="4K", color=GREEN): lambda w, h: 3840 < w and 2160 < h,
+    Tag(name="1080p", color=YELLOW): lambda w, h: 1920 < w and 1080 < h,
 }
 
 ORIENTATION_TAGS = {
-    Tag(name="Portrait", color=Color.PURPLE): lambda w, h: w / h < 1,
-    Tag(name="Square", color=Color.PURPLE): lambda w, h: 1 == w / h,
-    Tag(name="Landscape", color=Color.PURPLE): lambda w, h: 1 < w / h,
+    Tag(name="Portrait", color=PURPLE): lambda w, h: w / h < 1,
+    Tag(name="Square", color=PURPLE): lambda w, h: 1 == w / h,
+    Tag(name="Landscape", color=PURPLE): lambda w, h: 1 < w / h,
 }
 
 IMAGE_SUFFIXES = [".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tiff", ".webp"]
@@ -99,13 +102,13 @@ def get_appropriate_tags(img) -> list:
 
 
 def remove_info_tags(file: Path):
-    for tag in get_all_tags(file.absolute().as_posix()):
+    for tag in get_all_tags(str(file)):
         if tag in RES_TAGS.keys():
-            remove_tag(tag, file=file.absolute().as_posix())
+            remove_tag(tag, file=str(file))
         if tag in ORIENTATION_TAGS.keys():
-            remove_tag(tag, file=file.absolute().as_posix())
+            remove_tag(tag, file=str(file))
         if T_CORRUPT == tag:
-            remove_tag(tag, file=file.absolute().as_posix())
+            remove_tag(tag, file=str(file))
 
 
 # https://github.com/ftarlao/check-media-integrity/blob/master/check_mi.py
