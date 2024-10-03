@@ -1,6 +1,12 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Mylar: Tag Series Folder
 #
+# - No comic (`*.cbz`` or `*.cbr``)
+# - No `cover.jpg`
+# - No `cvinfo`
+# - No `folder.jpg`
+# - No `series.json`
+#
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
