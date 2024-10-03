@@ -10,15 +10,17 @@
 
 import shutil
 import sys
+from operator import itemgetter
 from os import chdir, environ, pathsep, remove
 from os.path import relpath
 from pathlib import Path
 from subprocess import run
-from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from patoolib import create_archive, test_archive
+
+from image_tag_resolution import YELLOW
 
 # MARK: PATH
 # To allow patoolib to find the binaries from Homebrew
@@ -27,22 +29,16 @@ environ["PATH"] += pathsep + "/usr/local/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
+# MARK: Constants
+
+GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 
 # MARK: Tags
-T_OK = Tag(
-    name="Comic is ok",
-    color=Color.GREEN,
-)
+T_OK = Tag(name="Comic is ok", color=GREEN)
 
-T_BAD = Tag(
-    name="Comic is bad",
-    color=Color.RED,
-)
+T_BAD = Tag(name="Comic is bad", color=RED)
 
-T_COLLISION = Tag(
-    name="File name collision",
-    color=Color.YELLOW,
-)
+T_COLLISION = Tag(name="File name collision", color=YELLOW)
 
 args = sys.argv[1:]
 
