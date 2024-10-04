@@ -14,7 +14,21 @@ from pathlib import Path
 
 from titlecase import titlecase
 
+# MARK Constants
+
+WORDS = [
+    "720p",
+    "HDTV",
+    "DD5.1",
+    "MPEG2",
+]
+
 # MARK: Functions
+
+
+def get_release_group(str: str) -> str:
+    m = re.match(r"-([a-zA-Z0-9]+)$", str)
+    return m.group(1) if m else ""
 
 
 def spiff_it_up(str: str) -> str:

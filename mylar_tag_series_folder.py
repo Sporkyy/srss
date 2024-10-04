@@ -14,7 +14,7 @@
 import os
 import re
 import sys
-from operator import is_, itemgetter
+from operator import itemgetter
 from os import PathLike
 
 # MARK: Imports
