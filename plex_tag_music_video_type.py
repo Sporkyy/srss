@@ -59,13 +59,6 @@ TAGS = {
 }
 
 
-# MARK: Functions
-def is_movie(fp: Path) -> bool:
-    if not fp.is_file():
-        return False
-    return fp.suffix.lower() in MV_FILE_SUFFIXES
-
-
 def get_stem_suffix(fp: Path) -> str:
     partitoned_stem = str.rpartition(fp.stem, "-")
     if partitoned_stem[1] == "":
@@ -80,17 +73,31 @@ for arg in args:
 
     P_arg = Path(arg)
 
-    # Skip if not a movie
-    if not is_movie(P_arg):
+    # Skip if not a file
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not P_arg.is_file():
+        print(f"🛑 {P_arg.name} 👉 Not a file")
         continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # Skip if not a movie
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not P_arg.suffix.lower() in MV_FILE_SUFFIXES:
+        print(f"🛑 {P_arg.name} 👉 Unrecognized suffix ({P_arg.suffix})")
+        continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Remove existing tags from the tags defined in this script
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag in get_all_tags(file=str(P_arg)):
         if tag in TAGS.keys():
             remove_tag(tag, file=str(P_arg))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Add the applicable tags. Each is exclusive (one-per-file)
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag, check in TAGS.items():
         if check(get_stem_suffix(P_arg)) if callable(check) else check:
             add_tag(tag, file=str(P_arg))
             break  # Because only one tag per file
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

@@ -29,18 +29,23 @@
 
 # MARK: Imports
 import sys
-from pathlib import Path
 from operator import itemgetter
+from pathlib import Path
 
-import ffmpeg
+# import ffmpeg
+from re import search as re_search
+
+import inflect
+from imageio_ffmpeg import read_frames
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
+# MARK: Constants
 T_CORRUPT = Tag(name="Corrupt", color=Color.RED)
 
-BLUE, GREEN = itemgetter("BLUE", "GREEN")(Color)
+BLUE, GREEN, YELLOW = itemgetter("BLUE", "GREEN", "YELLOW")(Color)
 
 RES_TAGS = {
     # The conditionals use minimum resolutions for simplicity
@@ -57,9 +62,9 @@ RES_TAGS = {
 }
 
 ORIENTATION_TAGS = {
-    Tag(name="Portrait", color=BLUE): lambda w, h: w / h < 1,
-    Tag(name="Square", color=BLUE): lambda w, h: 1 == w / h,
-    Tag(name="Landscape", color=BLUE): lambda w, h: 1 < w / h,
+    Tag(name="Portrait", color=YELLOW): lambda w, h: w / h < 1,
+    Tag(name="Square", color=YELLOW): lambda w, h: 1 == w / h,
+    Tag(name="Landscape", color=YELLOW): lambda w, h: 1 < w / h,
 }
 
 MOVIE_SUFFIXES = [
@@ -76,75 +81,93 @@ MOVIE_SUFFIXES = [
     ".webm",
 ]
 
+# MARK: Variables
+
+p = inflect.engine()
+
 # MARK: Functions
 
 
-# Shortcuts does this already when running the script in "production"
-# (Assuming the Input is configured properly for Quick Actions)
-# But doing it here helps when running it in "development"
-def is_video(file: Path) -> bool:
-    if not file.is_file():
-        return False
-    fn_suffix = file.suffix.lower()
-    if fn_suffix not in MOVIE_SUFFIXES:
-        return False
-    # try:
-    #     ffmpeg_check(file)
-    # except Exception as e:
-    #     print(f"🚫 {file.name} {e}")
-    #     add_tag(T_CORRUPT, file=arg)
-    #     return False
-    if not ffmpeg_check(file)
-        print(f"🚫 {file.name} {e}")
-        add_tag(T_CORRUPT, file=arg)
-        return False
-    return True
+def add_resolution_tag(path: Path, width: int, height: int):
+    for tag, test in RES_TAGS.items():
+        if test(width, height):
+            add_tag(tag, file=str(path))
+            print(f"〘{tag.name}〛👉 {path.name}")
+            break
 
 
-# https://github.com/ftarlao/check-media-integrity/blob/master/check_mi.py
-def ffmpeg_check(filename, error_detect="default", threads=0):
-    if error_detect == "default":
-        stream = ffmpeg.input(filename)
-    else:
-        if error_detect == "strict":
-            custom = "+crccheck+bitstream+buffer+explode"
-        else:
-            custom = error_detect
-        stream = ffmpeg.input(filename, **{"err_detect": custom, "threads": threads})
-
-    stream = stream.output("pipe:", format="null")
-    stream.run(capture_stdout=True, capture_stderr=True)
+def add_orientation_tag(path: Path, width: int, height: int):
+    for tag, test in ORIENTATION_TAGS.items():
+        if test(width, height):
+            add_tag(tag, file=str(path))
+            print(f"〘{tag.name}〛👉 {path.name}")
+            break
 
 
-def remove_info_tags(file: Path):
-    for tag in get_all_tags(str(file)):
-        if tag in RES_TAGS.keys():
-            remove_tag(tag, file=str(file))
-        if tag in ORIENTATION_TAGS.keys():
-            remove_tag(tag, file=str(file))
+def remove_existing_tags(path: Path):
+    for tag in get_all_tags(str(path)):
         if T_CORRUPT == tag:
-            remove_tag(tag, file=str(file))
+            remove_tag(tag, file=str(path))
+        if tag in RES_TAGS.keys():
+            remove_tag(tag, file=str(path))
+        if tag in ORIENTATION_TAGS.keys():
+            remove_tag(tag, file=str(path))
+        if re_search(r"^\d Mins?$", tag.name):
+            remove_tag(tag, file=str(path))
 
 
-args = sys.argv[1:]
+# Duration tags are all an integer number of mintues (rounded down)
+# e.g. 90 Mins
+def add_duration_tag(path: Path, duration: float):
+    if duration < 60:
+        duration_num = int(duration)
+        duration_word = p.plural("Sec", duration_num)
+    else:
+        duration_num = int(duration // 60)
+        duration_word = p.plural("Min", duration_num)
+    add_tag(Tag(name=f"{duration_num} {duration_word}", color=BLUE), file=str(path))
+    print(f"〘{duration_num} {duration_word}〛👉 {path.name}")
+
 
 # MARK: The Loop
-for arg in args:
+for arg in sys.argv[1:]:
 
     P_arg = Path(arg)
 
-    # Skip if not an image
-    if not is_video(P_arg):
+    if not P_arg.is_file():
+        print(f"{P_arg.name} is not a file")
         continue
 
-    # Remove any existing resolution tags
-    remove_info_tags(P_arg)
+    # Skip if the file has an unrecognized suffix
+    if not P_arg.suffix.lower() in MOVIE_SUFFIXES:
+        print(f"{P_arg.suffix} is not a movie suffix")
+        continue
 
-    # Get the image resolution
-    # with ImageP.open(P_arg) as img:
-    #     width, height = img.size
+    # Get the video metadata
+    # Or skip if the file is corrupt
+    try:
+        reader = read_frames(str(P_arg))
+        meta = reader.__next__()
+    except:
+        print(f"{P_arg.name} is corrupt")
+        add_tag(T_CORRUPT, file=str(P_arg))
+        continue
 
-    # Get+set the tags
-    # for tag in get_appropriate_tags(img):
-    #     add_tag(tag, file=arg)
-    #     print(f"〘{tag.name}〛👉 {P_arg.name}")
+    # Remove tags previously added by this script
+    remove_existing_tags(P_arg)
+    # Resolution tags are easy to do together since they are mutually exclusive
+
+    # Get the metadata
+    reader = read_frames(P_arg)
+    meta = reader.__next__()
+
+    # Get the video resolution
+    width, height = meta["width"], meta["height"]
+    # Set the video resolution-based tags
+    add_resolution_tag(P_arg, width, height)
+    add_orientation_tag(P_arg, width, height)
+
+    # Get the video duration
+    duration = meta["duration"]
+    # Set the video duration-based tag
+    add_duration_tag(P_arg, duration)

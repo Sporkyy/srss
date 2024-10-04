@@ -57,7 +57,7 @@ T_HAS_SERIES_TYPE_MISMATCH = Tag(name="Has series type mismatch", color=YELLOW)
 
 
 def get_series_type(p: Path) -> str:
-    m = re.match(r"^.*?\[([^\]]+)\]", p.name)
+    m = re.search(r"\[(.+?)\]", p.name)
     return m.group(1) if m else ""
 
 

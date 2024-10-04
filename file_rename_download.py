@@ -27,7 +27,7 @@ WORDS = [
 
 
 def get_release_group(str: str) -> str:
-    m = re.match(r"-([a-zA-Z0-9]+)$", str)
+    m = re.search(r"-([a-zA-Z0-9]+)$", str)
     return m.group(1) if m else ""
 
 
