@@ -23,8 +23,6 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
-# MARK: Constants
-
 # Probably a list of these out there somewhere
 MV_FILE_SUFFIXES = [
     ".avi",
@@ -43,21 +41,6 @@ MV_FILE_SUFFIXES = [
 # Just to keep the lambdas to 1 line
 ORANGE, PURPLE, RED = itemgetter("ORANGE", "PURPLE", "RED")(Color)
 
-# MARK: Tags
-
-# These are all exclusive with only 1 tag per file
-# Python guarantees the order of the dictionary now so the order here is meaningful
-TAGS = {
-    Tag(name="Unspecified", color=RED): lambda s: 0 == len(s),
-    Tag(name="Behind the Scenes", color=PURPLE): lambda s: "-behindthescenes" == s,
-    Tag(name="Concert", color=PURPLE): lambda s: "-concert" == s,
-    Tag(name="Interview", color=PURPLE): lambda s: "-interview" == s,
-    Tag(name="Live", color=PURPLE): lambda s: "-live" == s,
-    Tag(name="Lyrics", color=PURPLE): lambda s: "-lyrics" == s,
-    Tag(name="Video", color=PURPLE): lambda s: "-video" == s,
-    Tag(name="Invalid", color=ORANGE): True,  # Catch all
-}
-
 
 def get_stem_suffix(fp: Path) -> str:
     partitoned_stem = str.rpartition(fp.stem, "-")
@@ -66,10 +49,51 @@ def get_stem_suffix(fp: Path) -> str:
     return "-" + partitoned_stem[2]
 
 
-args = sys.argv[1:]
+def isUnspecified(p: Path) -> bool:
+    return 0 == len(get_stem_suffix(p))
+
+
+def isBehindTheScenes(p: Path) -> bool:
+    return "-behindthescenes" == get_stem_suffix(p)
+
+
+def isConcert(p: Path) -> bool:
+    return "-concert" == get_stem_suffix(p)
+
+
+def isInterview(p: Path) -> bool:
+    return "-interview" == get_stem_suffix(p)
+
+
+def isLive(p: Path) -> bool:
+    return "-live" == get_stem_suffix(p)
+
+
+def isLyrics(p: Path) -> bool:
+    return "-lyrics" == get_stem_suffix(p)
+
+
+def isVideo(p: Path) -> bool:
+    return "-video" == get_stem_suffix(p)
+
+
+# MARK: Tags
+
+# These are all exclusive with only 1 tag per file
+# Python guarantees the order of the dictionary now so the order here is meaningful
+TAGS = {
+    Tag(name="Behind the Scenes", color=PURPLE): isBehindTheScenes,
+    Tag(name="Concert", color=PURPLE): isConcert,
+    Tag(name="Interview", color=PURPLE): isInterview,
+    Tag(name="Live", color=PURPLE): isLive,
+    Tag(name="Lyrics", color=PURPLE): isLyrics,
+    Tag(name="Video", color=PURPLE): isVideo,
+    Tag(name="Unspecified", color=RED): lambda p: 0 == len(get_stem_suffix(p)),
+    Tag(name="Invalid", color=ORANGE): True,  # Catch all
+}
 
 # MARK: The Loop
-for arg in args:
+for arg in sys.argv[1:]:
 
     P_arg = Path(arg)
 

@@ -9,15 +9,16 @@
 import os
 import re
 import sys
-from collections import Counter
 from pathlib import Path
 
 from titlecase import titlecase
 
 # MARK Constants
 
-WORDS = [
+VIDEO_WORDS = [
+    "4K",
     "720p",
+    "1080p",
     "HDTV",
     "DD5.1",
     "MPEG2",

@@ -27,8 +27,6 @@ from macos_tags import remove as remove_tag
 
 # MARK: Constants
 
-ORANGE, RED, YELLOW = itemgetter("ORANGE", "RED", "YELLOW")(Color)
-
 COMIC_FILE_SUFFIXES = [".cbz", ".cbr"]
 
 SERIES_TYPES = [
@@ -41,6 +39,8 @@ SERIES_TYPES = [
 ]
 
 # MARK: Tags
+
+ORANGE, RED, YELLOW = itemgetter("ORANGE", "RED", "YELLOW")(Color)
 
 # Big problems (manual intervention required)
 T_MISSING_COMICS = Tag(name="Missing comics", color=RED)

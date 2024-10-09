@@ -121,10 +121,12 @@ def remove_existing_tags(path: Path):
 def add_duration_tag(path: Path, duration: float):
     if duration < 60:
         duration_num = int(duration)
-        duration_word = p.plural("Sec", duration_num)
+        duration_word = "Sec"
+        # duration_word = p.plural("Sec", duration_num)
     else:
         duration_num = int(duration // 60)
-        duration_word = p.plural("Min", duration_num)
+        # duration_word = p.plural("Min", duration_num)
+        duration_word = "Min"
     add_tag(Tag(name=f"{duration_num} {duration_word}", color=BLUE), file=str(path))
     print(f"〘{duration_num} {duration_word}〛👉 {path.name}")
 

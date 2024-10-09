@@ -35,9 +35,9 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 
 # MARK: Tags
-T_VALID = Tag(name="Comic is valid", color=Color.GREEN)
-T_CORRUPT = Tag(name="Comic is corrupt", color=Color.RED)
-T_COLLISON = Tag(name="File name collision", color=Color.YELLOW)
+T_VALID = Tag(name="Comic is valid", color=GREEN)
+T_CORRUPT = Tag(name="Comic is corrupt", color=RED)
+T_COLLISON = Tag(name="File name collision", color=YELLOW)
 
 
 # MARK: Functions

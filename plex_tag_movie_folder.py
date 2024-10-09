@@ -25,19 +25,21 @@ from sys import argv
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
+from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
 # MARK: Constants
 
 # https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 IGNORE_FILES = [
-    ".DS_Store",
     ".AppleDouble",
+    ".DS_Store",
     ".LSOverride",
+    ".plexmatch",
 ]
 
 # TODO: Find if ther is an official list of image suffixes for Plex
-IMAGE_SUFFIXES = [".jpg", ".jpeg", ".png", ".tiff", ".webp"]
+# IMAGE_SUFFIXES = [".jpg", ".jpeg", ".png", ".tiff", ".webp"]
 
 # TODO: Find if ther is an official list of movie suffixes for Plex
 MOVIE_SUFFIXES = [
@@ -54,31 +56,10 @@ MOVIE_SUFFIXES = [
     ".webm",
 ]
 
-EXTRAS_SUFFIXES = [
-    "-behindthescenes",
-    "-deleted",
-    "-featurette",
-    "-interview",
-    "-other",
-    "-scene",
-    "-short",
-    "-trailer",
-]
-
-EXTRAS_DIRECTORIES = [
-    "behind the scenes",
-    "deleted scenes",
-    "featurettes",
-    "interviews",
-    "other",
-    "scenes",
-    "shorts",
-    "trailers",
-]
-
-BLUE, RED = itemgetter("BLUE", "RED")(Color)
 
 # MARK: Tags
+
+BLUE, RED = itemgetter("BLUE", "RED")(Color)
 
 # These tags go on the movie folder
 # e.g. `The Matrix (1999) {imdb-tt0133093}`
@@ -87,14 +68,40 @@ BLUE, RED = itemgetter("BLUE", "RED")(Color)
 T_HAS_NO_MOVIE = Tag(name="Has no movies", color=RED)
 T_HAS_MULTIPLE_MOVIES = Tag(name="Has multiple movies", color=RED)
 # Tags based on the presence of Plex extras
-T_HAS_BEHIND_THE_SCENES = Tag(name="Has behind the scenes", color=BLUE)
-T_HAS_DELETED_SCENES = Tag(name="Has deleted scenes", color=BLUE)
-T_HAS_FEATURETTES = Tag(name="Has featurettes", color=BLUE)
-T_HAS_INTERVIEWS = Tag(name="Has interviews", color=BLUE)
-T_HAS_OTHER = Tag(name="Has other", color=BLUE)
-T_HAS_SCENES = Tag(name="Has scenes", color=BLUE)
-T_HAS_SHORTS = Tag(name="Has shorts", color=BLUE)
-T_HAS_TRAILERS = Tag(name="Has trailers", color=BLUE)
+HAS_EXTRAS_TAGS = {
+    Tag(name="Has behind the scenes", color=BLUE): [
+        "-behindthescenes",
+        "behind the scenes",
+    ],
+    Tag(name="Has deleted scenes", color=BLUE): [
+        "-deleted",
+        "deleted scenes",
+    ],
+    Tag(name="Has featurettes", color=BLUE): [
+        "-featurette",
+        "featurettes",
+    ],
+    Tag(name="Has interviews", color=BLUE): [
+        "-interview",
+        "interviews",
+    ],
+    Tag(name="Has other", color=BLUE): [
+        "-other",
+        "other",
+    ],
+    Tag(name="Has scenes", color=BLUE): [
+        "-scene",
+        "scenes",
+    ],
+    Tag(name="Has shorts", color=BLUE): [
+        "-short",
+        "shorts",
+    ],
+    Tag(name="Has trailers", color=BLUE): [
+        "-trailer",
+        "trailers",
+    ],
+}
 
 
 # MARK: Functions
@@ -104,168 +111,180 @@ def is_movie(path: Path) -> bool:
     return path.suffix.lower() in MOVIE_SUFFIXES
 
 
-def is_behind_the_scenes(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-behindthescenes")
-        or path.parent.name.lower() == "behind the scenes"
-    )
+# def is_behind_the_scenes(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     elif sub_path.stem.lower().endswith(
+#         "-behindthescenes"
+#     ) and sub_path.parent.samefile(path):
+#         return True
+#     elif (
+#         path.parent.name.lower() == "behind the scenes"
+#         and sub_path.parent.parent.samefile(path)
+#     ):
+#         return True
+#     else:
+#         return False
 
 
-def is_deleted_scene(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-deletedscene")
-        or path.parent.name.lower() == "deleted scenes"
-    )
+# TODO: Figure out if this is even true
+# i.e. Can an extra with a suffix be in any subdirectory of the movie folder?
+# i.e. Can an extra in an extras subdirectory be at any depth?
+def is_extra(path: Path, sub_path: Path, suffix: str, parent_dir_name: str) -> bool:
+    if sub_path.stem.lower().endswith(suffix) and sub_path.parent.samefile(path):
+        return True
+    elif (
+        path.parent.name.lower() == parent_dir_name
+        and sub_path.parent.parent.samefile(path)
+    ):
+        return True
+    else:
+        return False
 
 
-def is_interview(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-interview")
-        or path.parent.name.lower() == "interviews"
-    )
+# def is_deleted_scene(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-deletedscene")
+#         or path.parent.name.lower() == "deleted scenes"
+#     )
 
 
-def is_featurette(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-featurette")
-        or path.parent.name.lower() == "featurettes"
-    )
+# def is_interview(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-interview")
+#         or path.parent.name.lower() == "interviews"
+#     )
 
 
-def is_other(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-other") or path.parent.name.lower() == "other"
-    )
+# def is_featurette(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-featurette")
+#         or path.parent.name.lower() == "featurettes"
+#     )
 
 
-def is_scene(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-scene") or path.parent.name.lower() == "scenes"
-    )
+# def is_other(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-other") or path.parent.name.lower() == "other"
+#     )
 
 
-def is_short(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-short") or path.parent.name.lower() == "shorts"
-    )
+# def is_scene(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-scene") or path.parent.name.lower() == "scenes"
+#     )
 
 
-def is_trailer(path: Path) -> bool:
-    return is_movie(path) and (
-        path.stem.lower().endswith("-trailer") or path.parent.name.lower() == "trailers"
-    )
+# def is_short(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-short") or path.parent.name.lower() == "shorts"
+#     )
 
 
-def is_image(path: Path) -> bool:
-    return path.suffix.lower() in IMAGE_SUFFIXES
+# def is_trailer(path: Path, sub_path: Path) -> bool:
+#     if not is_movie(sub_path):
+#         return False
+#     return is_movie(path) and (
+#         path.stem.lower().endswith("-trailer") or path.parent.name.lower() == "trailers"
+#     )
+
+
+# def is_image(path: Path, sub_path: Path) -> bool:
+#     return path.suffix.lower() in IMAGE_SUFFIXES
 
 
 # TODO: There are multiple names for the poster image; gotta collect them all!
-def is_poster(path: Path) -> bool:
-    return path.stem.lower() == "poster"
+# def is_poster(path: Path, sub_path: Path) -> bool:
+#     return path.stem.lower() == "poster"
 
 
 # MARK: The Loop
-for str_movie_dir in argv[1:]:
+for arg in argv[1:]:
 
-    print(f"Checking {str_movie_dir}")
+    path = Path(arg)
 
-    path_movie_dir = Path(str_movie_dir)
-
-    # Skip if not a directory
-    if not path_movie_dir.is_dir():
+    # Ensure a directory
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not path.is_dir():
+        print(f"🛑 {path.name} 👉 Not a directory")
         continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Flags for the tags for this movie folder if a Plex extra is found
-    has_behind_the_scenes = False
-    has_deleted_scenes = False
-    has_featurettes = False
-    has_interviews = False
-    has_other = False
-    has_scenes = False
-    has_shorts = False
-    has_trailers = False
+    # 🏷️ Remove existing tags
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    for tag in get_all_tags(file=str(path)):
+        if tag in [
+            *HAS_EXTRAS_TAGS,
+            T_HAS_NO_MOVIE,
+            T_HAS_MULTIPLE_MOVIES,
+        ]:
+            remove_tag(tag, file=str(path))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # 📁 Loop through the directory and determine the appropriate tags
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Plex doesn't care about the number of movies in a folder
     # But Radarr does and I do too (I try to avoid multiple movies in a folder)
     cnt_non_extras_movies = 0
 
-    # For images
-    has_poster = False
-
-    for str_sub in glob(str(path_movie_dir / "**/*"), recursive=True):
-        print(f"↳ Checking {str_sub}")
+    for str_sub in glob(str(path / "**/*"), recursive=True):
+        print(f"🔎 Checking 👉 {str_sub}")
         sub_path = Path(str_sub)
-        if sub_path.name in IGNORE_FILES:
+        # Skip anything not a file
+        if not sub_path.is_file():
+            print(f"🛑 {sub_path.name} 👉 Not a file")
             continue
+        # Skip files that should be ignored (copy+paste from global `.gitignore`)
+        if sub_path.name in IGNORE_FILES:
+            print(f"🛑 {sub_path.name} 👉 Ignored")
+            continue
+        for tag, [suffix, dir_name] in HAS_EXTRAS_TAGS.items():
+            if is_extra(path, sub_path, suffix, dir_name):
+                add_tag(tag, file=str(path))
+                print(f"〘{tag.name}〛👉 {path.name}")
+                continue
         if is_movie(sub_path):
-            if is_behind_the_scenes(sub_path):
-                has_behind_the_scenes = True
-            elif is_deleted_scene(sub_path):
-                has_deleted_scenes = True
-            elif is_featurette(sub_path):
-                has_featurettes = True
-            elif is_interview(sub_path):
-                has_interviews = True
-            elif is_other(sub_path):
-                has_other = True
-            elif is_scene(sub_path):
-                has_scenes = True
-            elif is_short(sub_path):
-                has_shorts = True
-            elif is_trailer(sub_path):
-                has_trailers = True
-            else:
-                cnt_non_extras_movies += 1
-        if is_image(sub_path):
-            has_poster = True
-
-    if has_behind_the_scenes:
-        add_tag(T_HAS_BEHIND_THE_SCENES, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_BEHIND_THE_SCENES, file=str(path_movie_dir))
-
-    if has_deleted_scenes:
-        add_tag(T_HAS_DELETED_SCENES, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_DELETED_SCENES, file=str(path_movie_dir))
-
-    if has_featurettes:
-        add_tag(T_HAS_FEATURETTES, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_FEATURETTES, file=str(path_movie_dir))
-
-    if has_interviews:
-        add_tag(T_HAS_INTERVIEWS, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_INTERVIEWS, file=str(path_movie_dir))
-
-    if has_other:
-        add_tag(T_HAS_OTHER, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_OTHER, file=str(path_movie_dir))
-
-    if has_scenes:
-        add_tag(T_HAS_SCENES, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_SCENES, file=str(path_movie_dir))
-
-    if has_shorts:
-        add_tag(T_HAS_SHORTS, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_SHORTS, file=str(path_movie_dir))
-
-    if has_trailers:
-        add_tag(T_HAS_TRAILERS, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_TRAILERS, file=str(path_movie_dir))
+            cnt_non_extras_movies += 1
+        else:
+            print(f"⚠️ {sub_path.name} 👉 Not a movie")
 
     if 0 == cnt_non_extras_movies:
-        add_tag(T_HAS_NO_MOVIE, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_NO_MOVIE, file=str(path_movie_dir))
+        add_tag(T_HAS_NO_MOVIE, file=str(path))
+    elif 1 < cnt_non_extras_movies:
+        add_tag(T_HAS_MULTIPLE_MOVIES, file=str(path))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    if 1 < cnt_non_extras_movies:
-        add_tag(T_HAS_MULTIPLE_MOVIES, file=str(path_movie_dir))
-    else:
-        remove_tag(T_HAS_MULTIPLE_MOVIES, file=str(path_movie_dir))
+    # if is_behind_the_scenes(path, sub_path):
+    #     has_behind_the_scenes = True
+    # elif is_deleted_scene(path, sub_path):
+    #     has_deleted_scenes = True
+    # elif is_featurette(path, sub_path):
+    #     has_featurettes = True
+    # elif is_interview(path, sub_path):
+    #     has_interviews = True
+    # elif is_other(path, sub_path):
+    #     has_other = True
+    # elif is_scene(path, sub_path):
+    #     has_scenes = True
+    # elif is_short(path, sub_path):
+    #     has_shorts = True
+    # elif is_trailer(path, sub_path):
+    #     has_trailers = True
+    # elif is_movie(path, sub_path):
+    #     cnt_non_extras_movies += 1
+
+    # if is_image(sub_path):
+    #     has_poster = True
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
