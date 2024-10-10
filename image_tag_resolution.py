@@ -43,72 +43,42 @@ from wand.image import Image as ImageW
 
 # MARK: Tags
 
-T_CORRUPT = Tag(name="Corrupt", color=Color.RED)
 
-BLUE, GREEN, YELLOW, PURPLE = itemgetter("BLUE", "GREEN", "YELLOW", "PURPLE")(Color)
+GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
+
+T_CORRUPT = Tag(name="Corrupt", color=RED)
+
+ORIENTATION_TAGS = {
+    # Have to use `lambda`s here because floating point division is used
+    Tag(name="Portrait", color=YELLOW): lambda w, h: w / h < 1,
+    Tag(name="Square", color=YELLOW): lambda w, h: 1 == w / h,
+    Tag(name="Landscape", color=YELLOW): lambda w, h: 1 < w / h,
+}
 
 RES_TAGS = {
     # For tagging purposes the `(width, height)` tuple is the minimum resolution
-    Tag(name="8K", color=BLUE): lambda w, h: 7680 < w and 4320 < h,
-    Tag(name="6K", color=BLUE): lambda w, h: 6144 < w and 3456 < h,
-    Tag(name="5K", color=GREEN): lambda w, h: 5120 < w and 2880 < h,
-    Tag(name="4K", color=GREEN): lambda w, h: 3840 < w and 2160 < h,
-    Tag(name="1080p", color=YELLOW): lambda w, h: 1920 < w and 1080 < h,
+    Tag(name="8K", color=GREEN): (7680, 4320),
+    Tag(name="6K", color=GREEN): (6144, 3456),
+    Tag(name="5K", color=GREEN): (5120, 2880),
+    Tag(name="4K", color=GREEN): (3840, 2160),
+    Tag(name="1080p", color=GREEN): (1920, 1080),
+    Tag(name="720p", color=GREEN): (1280, 720),
+    Tag(name="480p", color=GREEN): (640, 480),
+    Tag(name="360p", color=GREEN): (480, 360),
+    Tag(name="240p", color=GREEN): (352, 240),
 }
 
-ORIENTATION_TAGS = {
-    Tag(name="Portrait", color=PURPLE): lambda w, h: w / h < 1,
-    Tag(name="Square", color=PURPLE): lambda w, h: 1 == w / h,
-    Tag(name="Landscape", color=PURPLE): lambda w, h: 1 < w / h,
-}
-
-IMAGE_SUFFIXES = [".bmp", ".gif", ".jpeg", ".jpg", ".png", ".tiff", ".webp"]
+IMAGE_SUFFIXES = [
+    ".bmp",
+    ".gif",
+    ".jpeg",
+    ".jpg",
+    ".png",
+    ".tiff",
+    ".webp",
+]
 
 # MARK: Functions
-
-
-# Shortcuts does this already when running the script in "production"
-# (Assuming the Input is configured properly for Quick Actions)
-# But doing it here helps when running it in "development"
-def is_image(file: Path) -> bool:
-    if not file.is_file():
-        return False
-    fn_suffix = file.suffix.lower()
-    if fn_suffix not in IMAGE_SUFFIXES:
-        return False
-    try:
-        pil_check(file)
-        magick_check(file)
-    except Exception as e:
-        print(f"🚫 {file.name} {e}")
-        add_tag(T_CORRUPT, file=arg)
-        return False
-    return True
-
-
-# This should work since `dict`s have a guaranteed order in Python 3.7+
-def get_appropriate_tags(img) -> list:
-    tags = []
-    width, height = img.size
-    for tag, test in ORIENTATION_TAGS.items():
-        if test(width, height):
-            tags.append(tag)
-            break
-    for tag, test in RES_TAGS.items():
-        if test(width, height):
-            tags.append(tag)
-            break
-    return tags
-
-
-def remove_info_tags(file: Path):
-    for tag in get_all_tags(str(file)):
-        if tag in RES_TAGS.keys():
-            remove_tag(tag, file=str(file))
-        if tag in ORIENTATION_TAGS.keys():
-            remove_tag(tag, file=str(file))
-        if T_CORRUPT == tag:
-            remove_tag(tag, file=str(file))
 
 
 # https://github.com/ftarlao/check-media-integrity/blob/master/check_mi.py
@@ -140,20 +110,63 @@ args = sys.argv[1:]
 # MARK: The Loop
 for arg in args:
 
-    P_arg = Path(arg)
+    path = Path(arg)
 
-    # Skip if not an image
-    if not is_image(P_arg):
+    # Ensure it's a file
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not path.is_file():
+        print(f"🛑 {path.name} 👉 Not a file")
         continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Remove any existing resolution tags
-    remove_info_tags(P_arg)
+    # Ensure it's an image
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not path.suffix.lower() in IMAGE_SUFFIXES:
+        print(f"🛑 {path.name} 👉 Not an image")
+        continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # Remove existing tags
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    for tag in get_all_tags(file=str(path)):
+        if (
+            tag in [T_CORRUPT]
+            or tag in RES_TAGS.keys()
+            or tag in ORIENTATION_TAGS.keys()
+        ):
+            remove_tag(tag, file=str(path))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # Ensure it's not corrupt
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    try:
+        pil_check(path)
+        magick_check(path)
+    except Exception as e:
+        print(f"🚫 {path.name} 👉 Corrupt")
+        print(e)
+        add_tag(T_CORRUPT, file=str(path))
+        continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # Apply the appropriate tags
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Get the image resolution
-    with ImageP.open(P_arg) as img:
-        width, height = img.size
+    with ImageP.open(path) as img:
+        img_width, img_height = img.size
+
+    print(f"📏 {path.name} 👉 {img_width}x{img_height}")
 
     # Get+set the tags
-    for tag in get_appropriate_tags(img):
-        add_tag(tag, file=arg)
-        print(f"〘{tag.name}〛👉 {P_arg.name}")
+    for tag, [req_width, req_height] in RES_TAGS.items():
+        if req_width <= img_width and req_height <= img_height:
+            add_tag(tag, file=str(path))
+            print(f"〘{tag.name}〛👉 {path.name}")
+            break
+
+    for tag, test in ORIENTATION_TAGS.items():
+        if test(img_width, img_height):
+            add_tag(tag, file=str(path))
+            print(f"〘{tag.name}〛👉 {path.name}")
+            break
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

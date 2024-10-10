@@ -15,7 +15,7 @@ from titlecase import titlecase
 
 # MARK Constants
 
-VIDEO_WORDS = [
+WORDS = [
     "4K",
     "720p",
     "1080p",
@@ -35,7 +35,10 @@ def get_release_group(str: str) -> str:
 def spiff_it_up(str: str) -> str:
     str = str.replace(".", " ")
     str = re.sub(r"\s{2,}", " ", str)
+    str = re.sub(r"(\b\w{3,}) (s)\b", r"\1'\2", str)
     str = titlecase(str)
+    for word in WORDS:
+        str = re.sub(rf"\b{word}\b", word, str, flags=re.IGNORECASE)
     str = str.strip()
     return str
 
@@ -58,7 +61,8 @@ for arg in args:
         dst = dst.with_name(spiff_it_up(dst.name))
 
     if src != dst:
-        print(f'Renaming "{src.name}" to "{dst.name}"')
-        os.rename(src, dst)
+        print(f"⬇️ {src.name}")
+        print(f"⬆️ {dst.name}")
+        # os.rename(src, dst)
     else:
-        print(f'Skipping "{src.name}"')
+        print(f"♻️ {src.name}")

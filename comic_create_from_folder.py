@@ -47,7 +47,7 @@ T_SRC_ZIP_FAILED = Tag(name="Failed Creation", color=RED)
 for arg in sys.argv[1:]:
 
     src = Path(arg)
-    # `with_suffix` is not used because the directory may have a dot in the name
+    # `with_suffix` not used below because the directory may have a dot in the name
     dst = Path(f"{src.name}.cbz")
 
     # 🏷️ Remove existing tags

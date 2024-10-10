@@ -33,9 +33,10 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 # MARK: Constants
 
+# MARK: Tags
+
 GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 
-# MARK: Tags
 T_VALID = Tag(name="Comic is valid", color=GREEN)
 T_CORRUPT = Tag(name="Comic is corrupt", color=RED)
 T_COLLISON = Tag(name="File name collision", color=YELLOW)
@@ -44,7 +45,6 @@ T_COLLISON = Tag(name="File name collision", color=YELLOW)
 # MARK: The Loop
 for arg in sys.argv[1:]:
     src = Path(arg)
-    tmp_dir = None
 
     # Skip if not a file
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -113,8 +113,7 @@ for arg in sys.argv[1:]:
             try:
                 test_archive(str(src))
                 repack_archive(str(src), str(dst))
-                # Presuming that `repack_archive` has some kind of test built-in
-                remove(src)
+                remove(src)  # Presuming `repack_archive` throws exceptions on failure
                 src = dst
             except Exception as e:
                 add_tag(T_CORRUPT, file=str(src))
