@@ -17,6 +17,7 @@ from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
+from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 from patoolib import repack_archive, test_archive
 from rarfile import is_rarfile
@@ -40,19 +41,6 @@ T_CORRUPT = Tag(name="Comic is corrupt", color=RED)
 T_COLLISON = Tag(name="File name collision", color=YELLOW)
 
 
-# MARK: Functions
-
-
-def tag_corrupt(file: Path):
-    remove_tag(T_VALID, file=str(file))
-    add_tag(T_CORRUPT, file=str(file))
-
-
-def tag_valid(file: Path):
-    remove_tag(T_CORRUPT, file=str(file))
-    add_tag(T_VALID, file=str(file))
-
-
 # MARK: The Loop
 for arg in sys.argv[1:]:
     src = Path(arg)
@@ -72,6 +60,13 @@ for arg in sys.argv[1:]:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # Remove existing tags
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    for tag in get_all_tags(file=str(src)):
+        if tag in [T_VALID, T_CORRUPT, T_COLLISON]:
+            remove_tag(tag, file=str(src))
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
     # Ensure the extension is lowercase
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if src.suffix.lower() != src.suffix:
@@ -82,64 +77,60 @@ for arg in sys.argv[1:]:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Fix extension if necessary
+    # This could be combined with the CBR repack, but it's not
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    remove_tag(T_COLLISON, file=str(src))
     if ".cbr" == src.suffix and is_zipfile(src):
-        src_cbr = src
-        dst_cbz = src.with_suffix(".cbz")
-        if dst_cbz.exists():
-            add_tag(T_COLLISON, file=str(src_cbr))
-            print(f"⚠️ {src_cbr.name} 👉 Collision ({dst_cbz.name})")
+        dst = src.with_suffix(".cbz")
+        if dst.exists():
+            add_tag(T_COLLISON, file=str(src))
+            print(f"⚠️ {src.name} 👉 Collision ({dst.name})")
             continue
         else:
-            rename(src_cbr, dst_cbz)
-            print(f"🔧 {src_cbr.name} Fixed extension (.cbr ➡️ .cbz)")
-            src = dst_cbz
+            rename(src, dst)
+            print(f"🔧 {src.name} 👉 Fixed extension (.cbr ➡️ .cbz)")
+            src = dst
     elif ".cbz" == src.suffix and is_rarfile(src):
-        src_cbz = src
-        dst_cbr = src_cbz.with_suffix(".cbr")
-        if dst_cbr.exists():
-            add_tag(T_COLLISON, file=str(src_cbz))
-            print(f"⚠️ {src_cbz.name} 👉 Collision ({dst_cbr.name})")
+        dst = src.with_suffix(".cbr")
+        if dst.exists():
+            add_tag(T_COLLISON, file=str(src))
+            print(f"⚠️ {src.name} 👉 Collides with {dst.name}")
             continue
         else:
-            rename(src_cbz, dst_cbr)
-            print(f"🔧 {src_cbz.name} 👉 Fixed extension (.cbz ➡️ .cbr)")
-            src = dst_cbr
+            rename(src, dst)
+            print(f"🔧 {src.name} 👉 Fixed extension (.cbz ➡️ .cbr)")
+            src = dst
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Repack CBRs
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    remove_tag(T_COLLISON, file=str(src))
     if ".cbr" == src.suffix and is_rarfile(src):
-        src_cbr = src
-        dst_cbz = src_cbr.with_suffix(".cbz")
-        if dst_cbz.exists():
-            add_tag(T_COLLISON, file=str(src_cbr))
-            print(f"⚠️ {src_cbr.name} 👉 Collision ({dst_cbz.name})")
+        dst = src.with_suffix(".cbz")
+        if dst.exists():
+            add_tag(T_COLLISON, file=str(src))
+            print(f"⚠️ Collision 👉 {src.name} 💥 ({dst.name})")
             continue
         else:
             try:
-                test_archive(str(src_cbr))
-                repack_archive(str(src_cbr), str(dst_cbz))
+                test_archive(str(src))
+                repack_archive(str(src), str(dst))
                 # Presuming that `repack_archive` has some kind of test built-in
-                remove(src_cbr)
-                src = dst_cbz
+                remove(src)
+                src = dst
             except Exception as e:
-                tag_corrupt(src)
-                print(f"🛑 Failed repack 👉 {src.name}")
-                print(f"❗️ Error 👉 {e}")
+                add_tag(T_CORRUPT, file=str(src))
+                print(f"🛑 {src.name} 👉 Failed repack")
+                print(e)
                 continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Tag the comic as ok
+    # Tag the comic as valid or corrupt
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         test_archive(str(src))
-        tag_valid(src)
+        add_tag(T_VALID, file=str(src))
         print(f"✅ {src.name} 👉 Valid")
     except Exception as e:
-        tag_corrupt(src)
+        add_tag(T_CORRUPT, file=str(src))
         print(f"🛑 {src.name} 👉 Corrupt ")
         print(e)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
