@@ -44,7 +44,8 @@ T_SRC_REMOVE_FAILED = Tag(name="Failed Cleanup", color=RED)
 T_SRC_ZIP_FAILED = Tag(name="Failed Creation", color=RED)
 
 # MARK: The Loop
-for arg in sys.argv[1:]:
+args = sys.argv[1:]
+for arg in args:
 
     src = Path(arg)
     # `with_suffix` not used below because the directory may have a dot in the name

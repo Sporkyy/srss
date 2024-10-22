@@ -132,7 +132,8 @@ def is_extra(path: Path, sub_path: Path, suffix: str, parent_dir_name: str) -> b
 
 
 # MARK: The Loop
-for arg in argv[1:]:
+args = argv[1:]
+for arg in args:
 
     P_movie = Path(arg)
 

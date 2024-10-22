@@ -9,19 +9,6 @@
 # fish_add_path {$MAGICK_HOME}/bin
 # ```
 #
-# ## Orientation Tags
-#   * Portrait
-#   * Landscape
-#   * Square
-#
-# ## Resoltuion Tags
-#   * 8K (7680x4320)
-#   * 6K (6144x3456),
-#   * 5K (5120x2880),
-#   * 4K (3840x2160),
-#   * 1080p (1920x1080),
-#   * Tiny (0x0),
-#
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/
 #   * https://pypi.org/project/pillow/
@@ -131,7 +118,8 @@ def add_duration_tag(path: Path, duration: float):
 
 
 # MARK: The Loop
-for arg in sys.argv[1:]:
+args = sys.argv[1:]
+for arg in args:
 
     path = Path(arg)
 

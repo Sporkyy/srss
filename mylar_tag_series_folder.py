@@ -66,8 +66,8 @@ def get_series_type(p: Path) -> str:
 
 
 # MARK: The Loop
-
-for arg in sys.argv[1:]:
+args = sys.argv[1:]
+for arg in args:
 
     print(f"Checking {arg}")
 

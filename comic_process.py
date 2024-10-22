@@ -43,7 +43,8 @@ T_COLLISON = Tag(name="File name collision", color=YELLOW)
 
 
 # MARK: The Loop
-for arg in sys.argv[1:]:
+args = sys.argv[1:]
+for arg in args:
     src = Path(arg)
 
     # Skip if not a file

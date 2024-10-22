@@ -70,7 +70,8 @@ def get_stem_suffix(fp: Path) -> str:
 
 
 # MARK: The Loop
-for arg in sys.argv[1:]:
+args = sys.argv[1:]
+for arg in args:
 
     path = Path(arg)
 
