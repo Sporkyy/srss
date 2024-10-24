@@ -14,8 +14,9 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
+
+import re
 import sys
-from ast import List
 from operator import itemgetter
 from pathlib import Path
 
@@ -39,20 +40,6 @@ ORIENTATION_TAGS = {
     Tag(name="Portrait", color=YELLOW): lambda ratio: ratio < 1,
     Tag(name="Square", color=YELLOW): lambda ratio: 1 == ratio,
     Tag(name="Landscape", color=YELLOW): lambda ratio: 1 < ratio,
-}
-
-RES_TAGS = {
-    # For tagging purposes the `(width, height)` tuple is the minimum resolution
-    Tag(name="8K", color=GREEN): (7680, 4320),
-    Tag(name="6K", color=GREEN): (6144, 3456),
-    Tag(name="5K", color=GREEN): (5120, 2880),
-    Tag(name="4K", color=GREEN): (3840, 2160),
-    Tag(name="1440p", color=GREEN): (2560, 1440),
-    Tag(name="1K", color=GREEN): (1920, 1080),
-    Tag(name="720p", color=GREEN): (1280, 720),
-    Tag(name="480p", color=GREEN): (640, 480),
-    Tag(name="360p", color=GREEN): (480, 360),
-    Tag(name="240p", color=GREEN): (352, 240),
 }
 
 IMAGE_SUFFIXES = [
@@ -121,8 +108,8 @@ for arg in args:
     for tag in get_all_tags(file=str(path)):
         if (
             tag in [T_CORRUPT]
-            or tag in RES_TAGS.keys()
             or tag in ORIENTATION_TAGS.keys()
+            or re.search(r"\d+x\d+", tag.name)
         ):
             remove_tag(tag, file=str(path))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -155,10 +142,8 @@ for arg in args:
             print(f"〘{tag.name}〛👉 {path.name}")
             break
 
-    # Set the resolution tags. Only for if landscape orientation
-    for tag, [req_width, req_height] in RES_TAGS.items():
-        if 1 < img_ratio and req_width <= img_width and req_height <= img_height:
-            add_tag(tag, file=str(path))
-            print(f"〘{tag.name}〛👉 {path.name}")
-            break
+    # Set the resolution tag
+    res_tag = Tag(name=f"{img_width}x{img_height}", color=GREEN)
+    add_tag(res_tag, file=str(path))
+    print(f"〘{res_tag.name}〛👉 {path.name}")
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
