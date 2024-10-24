@@ -34,7 +34,7 @@ T_CORRUPT = Tag(name="Corrupt", color=Color.RED)
 
 BLUE, GREEN, YELLOW = itemgetter("BLUE", "GREEN", "YELLOW")(Color)
 
-RES_TAGS = {
+LANDSCAPE_TAGS = {
     # The conditionals use minimum resolutions for simplicity
     Tag(name="8K", color=GREEN): (7680, 4320),
     Tag(name="6K", color=GREEN): (6144, 3456),
@@ -75,7 +75,7 @@ p = inflect.engine()
 
 
 def add_resolution_tag(path: Path, width: int, height: int):
-    for tag, [tag_width, tag_height] in RES_TAGS.items():
+    for tag, [tag_width, tag_height] in LANDSCAPE_TAGS.items():
         if tag_width < width and tag_height < height:
             add_tag(tag, file=str(path))
             print(f"〘{tag.name}〛👉 {path.name}")
@@ -94,7 +94,7 @@ def remove_existing_tags(path: Path):
     for tag in get_all_tags(str(path)):
         if T_CORRUPT == tag:
             remove_tag(tag, file=str(path))
-        if tag in RES_TAGS.keys():
+        if tag in LANDSCAPE_TAGS.keys():
             remove_tag(tag, file=str(path))
         if tag in ORIENTATION_TAGS.keys():
             remove_tag(tag, file=str(path))
