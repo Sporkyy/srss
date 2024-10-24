@@ -36,7 +36,6 @@ GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 T_CORRUPT = Tag(name="Corrupt", color=RED)
 
 ORIENTATION_TAGS = {
-    # Have to use `lambda`s here because floating point division is used
     Tag(name="Portrait", color=YELLOW): lambda ratio: ratio < 1,
     Tag(name="Square", color=YELLOW): lambda ratio: 1 == ratio,
     Tag(name="Landscape", color=YELLOW): lambda ratio: 1 < ratio,
@@ -106,10 +105,8 @@ for arg in args:
     # Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag in get_all_tags(file=str(path)):
-        if (
-            tag in [T_CORRUPT]
-            or tag in ORIENTATION_TAGS.keys()
-            or re.search(r"\d+x\d+", tag.name)
+        if tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()] or re.search(
+            r"\d+x\d+", tag.name
         ):
             remove_tag(tag, file=str(path))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -132,8 +129,6 @@ for arg in args:
     with ImageP.open(path) as img:
         img_width, img_height = img.size
         img_ratio = ratio(img_width, img_height)
-
-    print(f"📏 {path.name} 👉 {img_width}x{img_height} ({img_ratio})")
 
     # Set the orientation tags
     for tag, test in ORIENTATION_TAGS.items():
