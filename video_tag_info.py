@@ -19,22 +19,26 @@
 import re
 import sys
 from operator import itemgetter
+from os import environ, pathsep
 from pathlib import Path
 
-# import ffmpeg
-from re import search as re_search
-
-import inflect
 from imageio_ffmpeg import read_frames
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
-# MARK: Constants
-T_CORRUPT = Tag(name="Corrupt", color=Color.RED)
+# MARK: PATH Additions
+# To allow `imageio_ffmpeg` to find the binaries from Homebrew
 
-BLUE, GREEN, YELLOW = itemgetter("BLUE", "GREEN", "YELLOW")(Color)
+environ["PATH"] += pathsep + "/usr/local/bin"
+environ["PATH"] += pathsep + "/opt/homebrew/bin"
+environ["PATH"] += pathsep + "/opt/homebrew/sbin"
+
+# MARK: Constants
+BLUE, GREEN, RED, YELLOW = itemgetter("BLUE", "GREEN", "RED", "YELLOW")(Color)
+T_CORRUPT = Tag(name="Corrupt", color=RED)
+
 
 ORIENTATION_TAGS = {
     Tag(name="Portrait", color=YELLOW): lambda ratio: ratio < 1,
@@ -56,10 +60,6 @@ MOVIE_SUFFIXES = [
     ".webm",
 ]
 
-# MARK: Variables
-
-p = inflect.engine()
-
 # MARK: Functions
 
 
@@ -80,24 +80,26 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Skip if the file has an unrecognized suffix
+    # Skip if the path does not have a recognized suffix
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if not path.suffix.lower() in MOVIE_SUFFIXES:
         print(f"{path.suffix} is not a movie suffix")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Remove existing tags
+    # Remove any pre-existing tags (that look like they were set by this script)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag in get_all_tags(file=str(path)):
-        if tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()] or re.search(
-            r"\d+x\d+", tag.name
+        if (
+            tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()]
+            or re.search(r"\d+x\d+", tag.name)  # resolution tag
+            or re.search(r"\d{2}:\d{2}:\d{2}", tag.name)  # duration tag
         ):
             remove_tag(tag, file=str(path))
     # Resolution tags are easy to do together since they are mutually exclusive
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Get the video metadata or skip if the file is corrupt
+    # (Try to) get the metadata or skip+tag if the video is corrupt
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         reader = read_frames(str(path))
@@ -108,9 +110,9 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Set the resolution-based tags
+    # Add the resolution-based tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    vid_width, vid_height = meta["width"], meta["height"]
+    vid_width, vid_height = meta["size"]
     vid_ratio = ratio(vid_width, vid_height)
 
     for tag, test in ORIENTATION_TAGS.items():
@@ -125,7 +127,7 @@ for arg in args:
     print(f"〘{res_tag.name}〛👉 {path.name}")
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Set the duration tag
+    # Add the duration tag
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     duration = meta["duration"]
     duration_secs = int(duration)

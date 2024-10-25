@@ -23,7 +23,7 @@ from macos_tags import remove as remove_tag
 from patoolib import create_archive, test_archive
 
 # MARK: PATH Additions
-# To allow patoolib to find the binaries from Homebrew
+# To allow `patoolib` to find the binaries from Homebrew
 
 environ["PATH"] += pathsep + "/usr/local/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/bin"
