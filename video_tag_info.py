@@ -1,17 +1,9 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Image: Tag Info
-#
-# Resolutions are tagged by the nearest smallest "named" resolution.
-#
-# ## How to configure `imagemagick` for `wand` in `fish`
-# ```fish
-# set -gx MAGICK_HOME /opt/homebrew/opt/imagemagick
-# fish_add_path {$MAGICK_HOME}/bin
-# ```
+# Video: Tag Info
 #
 # ## External Dependencies
 #   * https://pypi.org/project/macos-tags/
-#   * https://pypi.org/project/pillow/
+#   * https://pypi.org/project/imageio_ffmpeg/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
