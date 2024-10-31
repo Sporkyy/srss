@@ -28,6 +28,8 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
+from plex_tag_music_video_type import PURPLE
+
 # MARK: PATH Additions
 # To allow `imageio_ffmpeg` to find the binaries from Homebrew
 
@@ -36,14 +38,29 @@ environ["PATH"] += pathsep + "/opt/homebrew/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 # MARK: Constants
-BLUE, GREEN, RED, YELLOW = itemgetter("BLUE", "GREEN", "RED", "YELLOW")(Color)
+
+(
+    BLUE,
+    GREY,
+    GREEN,
+    ORANGE,
+    PURPLE,
+    RED,
+) = itemgetter(
+    "BLUE",
+    "GREEN",
+    "GREY",
+    "ORANGE",
+    "PURPLE",
+    "RED",
+)(Color)
+
 T_CORRUPT = Tag(name="Corrupt", color=RED)
 
-
 ORIENTATION_TAGS = {
-    Tag(name="Portrait", color=YELLOW): lambda ratio: ratio < 1,
-    Tag(name="Square", color=YELLOW): lambda ratio: 1 == ratio,
-    Tag(name="Landscape", color=YELLOW): lambda ratio: 1 < ratio,
+    Tag(name="Portrait", color=ORANGE): lambda ratio: ratio < 1,
+    Tag(name="Square", color=GREY): lambda ratio: 1 == ratio,
+    Tag(name="Landscape", color=PURPLE): lambda ratio: 1 < ratio,
 }
 
 MOVIE_SUFFIXES = [
@@ -76,14 +93,14 @@ for arg in args:
     # Skip if the path is not a file
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if not path.is_file():
-        print(f"{path.name} is not a file")
+        print(f"🛑 {path.name} 👉 not a file")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Skip if the path does not have a recognized suffix
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if not path.suffix.lower() in MOVIE_SUFFIXES:
-        print(f"{path.suffix} is not a movie suffix")
+        print(f"🛑 {path.suffix} 👉 not a movie suffix")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
@@ -104,8 +121,9 @@ for arg in args:
     try:
         reader = read_frames(str(path))
         meta = reader.__next__()
-    except:
-        print(f"{path.name} is corrupt")
+    except Exception as e:
+        print(f"🚫 {path.name} 👉 corrupt")
+        print(e)
         add_tag(T_CORRUPT, file=str(path))
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

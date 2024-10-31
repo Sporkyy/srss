@@ -29,14 +29,26 @@ from PIL import Image
 
 # MARK: Tags
 
-GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
+(
+    GREEN,
+    GREY,
+    ORANGE,
+    PURPLE,
+    RED,
+) = itemgetter(
+    "GREEN",
+    "GREY",
+    "ORANGE",
+    "PURPLE",
+    "RED",
+)(Color)
 
 T_CORRUPT = Tag(name="Corrupt", color=RED)
 
 ORIENTATION_TAGS = {
-    Tag(name="Portrait", color=YELLOW): lambda ratio: ratio < 1,
-    Tag(name="Square", color=YELLOW): lambda ratio: 1 == ratio,
-    Tag(name="Landscape", color=YELLOW): lambda ratio: 1 < ratio,
+    Tag(name="Portrait", color=ORANGE): lambda ratio: ratio < 1,
+    Tag(name="Square", color=GREY): lambda ratio: 1 == ratio,
+    Tag(name="Landscape", color=PURPLE): lambda ratio: 1 < ratio,
 }
 
 IMAGE_SUFFIXES = [
