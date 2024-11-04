@@ -16,16 +16,50 @@ from titlecase import titlecase
 # MARK: Functions
 
 
-def get_release_group(str: str) -> str:
-    m = re.search(r"-([a-zA-Z0-9]+)$", str)
-    return m.group(1) if m else ""
+# def six_to_eight_digit_date(m):
+#     # Year, month, day
+#     if 12 < m.group(3):
+#         year = m.group(1)
+#         month = m.group(2)
+#         day = m.group(3)
+#     # Month, day, year
+#     elif 12 < m.group(2):
+#         month = m.group(1)
+#         day = m.group(2)
+#         year = m.group(3)
+#     # elif 12 < m.group(1):
+#     #     year = m.group(3)
+#     #     month = m.group(2)
+#     #     day = m.group(1)
+#     # The matched date, with the year expanded
+#     return f"{year}-{month}-{day})"
+
+
+# def get_release_group(str: str) -> str:
+#     m = re.search(r"-([a-zA-Z0-9]+)$", str)
+#     return m.group(1) if m else ""
+
+
+def date_match_formatter(m):
+    if m is None:
+        return ""
+    year, month, day = m.groups()
+    if 2 == len(year):
+        year = f"20{year}"
+    return f"{year}-{month}-{day}"
 
 
 def spiff_it_up(str: str) -> str:
     str = str.replace(".", " ")
-    str = re.sub(r"\s{2,}", " ", str)
-    # str = re.sub(r"(\b\w{3,}) (s)\b", r"\1'\2", str)
+    # Resolution
+    str = re.sub(r"\b(\d{3,4})p\b", r"\[\1p\]", str)
+    str = re.sub(r"\bMP4-?\b", r" ", str, flags=re.IGNORECASE)
+    str = re.sub(r"\bXXX?\b", r" ", str, flags=re.IGNORECASE)
+    # 6 and 8 digit dates (YYMMDD  and YYYYMMDD)
+    str = re.sub(r"\b(\d{2}\d{2}?)\D(\d{2})\D(\d{2})\b", date_match_formatter, str)
     str = titlecase(str)
+    # Normalize each whitespace instance to a single space
+    str = re.sub(r"\s", " ", str)
     str = str.strip()
     return str
 
