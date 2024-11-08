@@ -24,13 +24,13 @@ from PIL import Image
 
 (
     GREEN,
-    GREY,
+    GRAY,
     ORANGE,
     PURPLE,
     RED,
 ) = itemgetter(
     "GREEN",
-    "GREY",
+    "GRAY",
     "ORANGE",
     "PURPLE",
     "RED",
@@ -40,7 +40,7 @@ T_CORRUPT = Tag(name="Corrupt", color=RED)
 
 ORIENTATION_TAGS = {
     Tag(name="Portrait", color=ORANGE): lambda ratio: ratio < 1,
-    Tag(name="Square", color=GREY): lambda ratio: 1 == ratio,
+    Tag(name="Square", color=GRAY): lambda ratio: 1 == ratio,
     Tag(name="Landscape", color=PURPLE): lambda ratio: 1 < ratio,
 }
 

@@ -13,6 +13,23 @@ from pathlib import Path
 
 from titlecase import titlecase
 
+# MARK: Constants
+
+GOES_IN_SQUARE_BRACKETS = [
+    r"\b\d{3,4}p\b",
+    r"\bMP4(?:-\w+)?\b",
+    r"\bDDC\b",
+    r"\bx264\b",
+    r"\bx265\b",
+    r"\bXviD\b",
+    r"\bHEVC\b",
+    r"\bHDTV\b",
+    r"\bWEB\b",
+    r"\bWEBRip\b",
+    r"\bWEB-?DL\b",
+    r"\bXXX\b",
+]
+
 # MARK: Functions
 
 
@@ -43,18 +60,20 @@ from titlecase import titlecase
 def date_match_formatter(m):
     if m is None:
         return ""
+    # yymmdd = 80-09-11
     year, month, day = m.groups()
+    # mmddyy = 09-11-80
+    if 32 <= day and month <= 12:
+        year, month, day = month, day, year
     if 2 == len(year):
         year = f"20{year}"
-    return f"{year}-{month}-{day}"
+    return f" {year}-{month}-{day} "
 
 
 def spiff_it_up(str: str) -> str:
     str = str.replace(".", " ")
     # Resolution
-    str = re.sub(r"\b(\d{3,4})p\b", r"\[\1p\]", str)
-    str = re.sub(r"\bMP4-?\b", r" ", str, flags=re.IGNORECASE)
-    str = re.sub(r"\bXXX?\b", r" ", str, flags=re.IGNORECASE)
+    str = re.sub(r"\b(\d{3,4})p\b", r" \[\1p\] ", str)
     # 6 and 8 digit dates (YYMMDD  and YYYYMMDD)
     str = re.sub(r"\b(\d{2}\d{2}?)\D(\d{2})\D(\d{2})\b", date_match_formatter, str)
     str = titlecase(str)

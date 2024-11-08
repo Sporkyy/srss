@@ -22,8 +22,6 @@ from macos_tags import remove as remove_tag
 from patoolib import repack_archive, test_archive
 from rarfile import is_rarfile
 
-from comic_create_from_folder import RED
-
 # MARK: PATH
 # To allow patoolib to find the binaries from Homebrew
 
