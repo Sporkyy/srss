@@ -20,8 +20,6 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 
-from plex_tag_music_video_type import PURPLE
-
 # MARK: PATH Additions
 # To allow `imageio_ffmpeg` to find the binaries from Homebrew
 
