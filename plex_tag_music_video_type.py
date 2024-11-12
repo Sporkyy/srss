@@ -18,9 +18,10 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
-import sys
+
 from operator import itemgetter
 from pathlib import Path
+from sys import argv
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -46,7 +47,15 @@ MV_FILE_SUFFIXES = [
 # MARK: Tags
 
 # Just to keep the lambdas to 1 line
-ORANGE, PURPLE, RED = itemgetter("ORANGE", "PURPLE", "RED")(Color)
+(
+    ORANGE,
+    PURPLE,
+    RED,
+) = itemgetter(
+    "ORANGE",
+    "PURPLE",
+    "RED",
+)(Color)
 
 # These are all exclusive with only 1 tag per file
 # Python guarantees the order of the dictionary now so the order here is meaningful
@@ -70,7 +79,7 @@ def get_stem_suffix(fp: Path) -> str:
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
 
     path = Path(arg)

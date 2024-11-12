@@ -8,11 +8,10 @@
 
 # MARK: Imports
 
-import re
-import sys
 from operator import itemgetter
-from os import environ, pathsep
 from pathlib import Path
+from re import search as re_search
+from sys import argv
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -62,10 +61,10 @@ def ratio(w: int, h: int) -> float:
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
 
-    path = Path(arg)
+    path = Path(arg.strip())
 
     # Skip if the path is not a file
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -84,7 +83,7 @@ for arg in args:
     # Remove any pre-existing tags (that look like they were set by this script)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag in get_all_tags(file=str(path)):
-        if tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()] or re.search(
+        if tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()] or re_search(
             r"\d+x\d+", tag.name
         ):
             remove_tag(tag, file=str(path))

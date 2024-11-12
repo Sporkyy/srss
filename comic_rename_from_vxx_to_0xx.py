@@ -8,19 +8,19 @@
 
 # MARK: Imports
 
-import os
-import re
-import sys
+from os import rename
+from re import compile as re_compile, search as re_search
+from sys import argv
 from pathlib import Path
 
 # MARK: Constants
 
-RE_VOL_NUM = re.compile(r"\bv(\d{2,})\b")
-RE_NO_VOL = re.compile(r"\b(\d{2,})\b")
+RE_VOL_NUM = re_compile(r"\bv(\d{2,})\b")
+RE_NO_VOL = re_compile(r"\b(\d{2,})\b")
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 
 for arg in args:
     src = Path(arg)
@@ -41,11 +41,11 @@ for arg in args:
 
     dst = src
 
-    g = re.search(RE_VOL_NUM, src.stem)
+    g = re_search(RE_VOL_NUM, src.stem)
     if g:
         # dst = dst.with_stem(re.sub(RE_VOL_NUM, r"0\1", dst))
     else:
-        g = re.search(RE_NO_VOL, src.stem):
+        g = re_search(RE_NO_VOL, src.stem):
         # dst = dst.with_stem(re.sub(RE_NO_VOL, r"0\1", dst.stem))
 
     # dst = dst.with_stem(re.sub(RE_VOL_NUM, r"0\1", dst.stem))
@@ -53,6 +53,6 @@ for arg in args:
     if src != dst:
         print(f"⬇️ 👉 {src.name}")
         print(f"⬆️ 👉 {dst.name}")
-        os.rename(src, dst)
+        rename(src, dst)
     else:
         print(f"⏩ Skipping 👉 {src}")

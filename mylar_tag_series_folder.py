@@ -11,15 +11,14 @@
 #   * https://pypi.org/project/macos-tags/
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-import os
-import re
-import sys
-from operator import itemgetter
-from os import PathLike
-
 # MARK: Imports
+
+from operator import itemgetter
+from os import PathLike, scandir
 from os.path import join as path_join
 from pathlib import Path
+from re import search as re_search
+from sys import argv
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -61,12 +60,12 @@ T_HAS_SERIES_TYPE_MISMATCH = Tag(name="Has series type mismatch", color=YELLOW)
 
 
 def get_series_type(p: Path) -> str:
-    m = re.search(r"^\[(.+?)\]", p.name)
+    m = re_search(r"^\[(.+?)\]", p.name)
     return m.group(1) if m else ""
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
 
     print(f"Checking {arg}")
@@ -94,7 +93,7 @@ for arg in args:
     # Check for the presence of various files and series type mismatches
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     series_type = get_series_type(P_series_dir)
-    with os.scandir(P_series_dir) as it:
+    with scandir(P_series_dir) as it:
         for entry in it:
             P_entry = Path(path_join(P_series_dir, entry.name))
             if not P_entry.is_file():

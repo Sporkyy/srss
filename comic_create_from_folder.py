@@ -8,13 +8,13 @@
 
 # MARK: Imports
 
-import shutil
-import sys
 from operator import itemgetter
 from os import chdir, environ, pathsep, remove
 from os.path import relpath
 from pathlib import Path
+from shutil import rmtree
 from subprocess import run
+from sys import argv
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -44,7 +44,7 @@ T_SRC_REMOVE_FAILED = Tag(name="Failed Cleanup", color=RED)
 T_SRC_ZIP_FAILED = Tag(name="Failed Creation", color=RED)
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
 
     src = Path(arg)
@@ -120,7 +120,7 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         if dst.exists() and T_DST_VALID in get_all_tags(file=str(dst)):
-            shutil.rmtree(src)
+            rmtree(src)
     except Exception as e:
         print(f"🛑 {src.name} 👉 {e}")
         add_tag(T_SRC_REMOVE_FAILED, file=str(src))

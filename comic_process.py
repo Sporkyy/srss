@@ -9,10 +9,10 @@
 
 # MARK: Imports
 
-import sys
 from operator import itemgetter
 from os import environ, pathsep, remove, rename
 from pathlib import Path
+from sys import argv
 from zipfile import is_zipfile
 
 from macos_tags import Color, Tag
@@ -39,7 +39,7 @@ T_COLLISON = Tag(name="Collision", color=YELLOW)
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
     src = Path(arg)
 

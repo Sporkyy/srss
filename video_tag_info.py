@@ -8,11 +8,11 @@
 
 # MARK: Imports
 
-import re
-import sys
 from operator import itemgetter
 from os import environ, pathsep
 from pathlib import Path
+from re import search as re_search
+from sys import argv
 
 from imageio_ffmpeg import read_frames
 from macos_tags import Color, Tag
@@ -75,7 +75,7 @@ def ratio(w: int, h: int) -> float:
 
 
 # MARK: The Loop
-args = sys.argv[1:]
+args = argv[1:]
 for arg in args:
 
     path = Path(arg)
@@ -99,8 +99,8 @@ for arg in args:
     for tag in get_all_tags(file=str(path)):
         if (
             tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()]
-            or re.search(r"\d+x\d+", tag.name)  # resolution tag
-            or re.search(r"\d{2}:\d{2}:\d{2}", tag.name)  # duration tag
+            or re_search(r"\d+x\d+", tag.name)  # resolution tag
+            or re_search(r"\d{2}:\d{2}:\d{2}", tag.name)  # duration tag
         ):
             remove_tag(tag, file=str(path))
     # Resolution tags are easy to do together since they are mutually exclusive

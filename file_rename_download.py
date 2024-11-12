@@ -6,10 +6,11 @@
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
 # MARK: Imports
-import os
-import re
-import sys
+
+from os import rename
 from pathlib import Path
+from re import search as re_search
+from sys import argv
 
 from titlecase import titlecase
 
@@ -53,7 +54,7 @@ GOES_IN_SQUARE_BRACKETS = [
 
 
 # def get_release_group(str: str) -> str:
-#     m = re.search(r"-([a-zA-Z0-9]+)$", str)
+#     m = re_search(r"-([a-zA-Z0-9]+)$", str)
 #     return m.group(1) if m else ""
 
 
@@ -73,19 +74,19 @@ def date_match_formatter(m):
 def spiff_it_up(str: str) -> str:
     str = str.replace(".", " ")
     # Resolution
-    str = re.sub(r"\b(\d{3,4})p\b", r" \[\1p\] ", str)
+    str = re_sub(r"\b(\d{3,4})p\b", r" \[\1p\] ", str)
     # 6 and 8 digit dates (YYMMDD  and YYYYMMDD)
-    str = re.sub(r"\b(\d{2}\d{2}?)\D(\d{2})\D(\d{2})\b", date_match_formatter, str)
+    str = re_sub(r"\b(\d{2}\d{2}?)\D(\d{2})\D(\d{2})\b", date_match_formatter, str)
     str = titlecase(str)
     # Normalize each whitespace instance to a single space
-    str = re.sub(r"\s", " ", str)
+    str = re_sub(r"\s", " ", str)
     str = str.strip()
     return str
 
 
 # MARK: The Loop
 # The variable here will actually be used in this script
-args = sys.argv[1:]
+args = argv[1:]
 # Sort the arguments in reverse order so deeper paths are processed first
 args.sort(reverse=True)
 # See? (told you so)
@@ -101,6 +102,6 @@ for arg in args:
     if src != dst:
         print(f"⬇️ {src.name}")
         print(f"⬆️ {dst.name}")
-        os.rename(src, dst)
+        rename(src, dst)
     else:
         print(f"♻️ {src.name}")
