@@ -22,17 +22,17 @@ from PIL import Image
 # MARK: Tags
 
 (
-    GREEN,
-    GRAY,
-    ORANGE,
-    PURPLE,
     RED,
+    ORANGE,
+    GREEN,
+    PURPLE,
+    GRAY,
 ) = itemgetter(
-    "GREEN",
-    "GRAY",
-    "ORANGE",
-    "PURPLE",
     "RED",
+    "ORANGE",
+    "GREEN",
+    "PURPLE",
+    "GRAY",
 )(Color)
 
 T_CORRUPT = Tag(name="Corrupt", color=RED)

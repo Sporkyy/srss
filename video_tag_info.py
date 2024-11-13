@@ -30,19 +30,19 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 # MARK: Constants
 
 (
-    BLUE,
-    GRAY,
-    GREEN,
-    ORANGE,
-    PURPLE,
     RED,
+    ORANGE,
+    GREEN,
+    BLUE,
+    PURPLE,
+    GRAY,
 ) = itemgetter(
-    "BLUE",
-    "GREEN",
-    "GRAY",
-    "ORANGE",
-    "PURPLE",
     "RED",
+    "ORANGE",
+    "GREEN",
+    "BLUE",
+    "PURPLE",
+    "GRAY",
 )(Color)
 
 T_CORRUPT = Tag(name="Corrupt", color=RED)
@@ -63,6 +63,10 @@ MOVIE_SUFFIXES = [
     ".mp4",
     ".mpg",
     ".mpeg",
+    ".ogv",
+    ".rm",
+    ".rmvb",
+    ".ts",
     ".vob",
     ".webm",
 ]
@@ -103,7 +107,6 @@ for arg in args:
             or re_search(r"\d{2}:\d{2}:\d{2}", tag.name)  # duration tag
         ):
             remove_tag(tag, file=str(path))
-    # Resolution tags are easy to do together since they are mutually exclusive
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # (Try to) get the metadata or skip+tag if the video is corrupt
