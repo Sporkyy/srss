@@ -48,23 +48,29 @@ MV_FILE_SUFFIXES = [
 
 # Just to keep the lambdas to 1 line
 (
-    ORANGE,
-    PURPLE,
     RED,
+    ORANGE,
+    YELLOW,
+    GREEN,
+    BLUE,
+    PURPLE,
 ) = itemgetter(
-    "ORANGE",
-    "PURPLE",
     "RED",
+    "ORANGE",
+    "YELLOW",
+    "GREEN",
+    "BLUE",
+    "PURPLE",
 )(Color)
 
 # These are all exclusive with only 1 tag per file
 # Python guarantees the order of the dictionary now so the order here is meaningful
 MV_TAGS = {
-    Tag(name="Behind the Scenes", color=PURPLE): "-behindthescenes",
-    Tag(name="Concert", color=PURPLE): "-concert",
-    Tag(name="Interview", color=PURPLE): "-interview",
-    Tag(name="Live", color=PURPLE): "-live",
-    Tag(name="Lyrics", color=PURPLE): "-lyrics",
+    Tag(name="Behind the Scenes", color=RED): "-behindthescenes",
+    Tag(name="Concert", color=ORANGE): "-concert",
+    Tag(name="Interview", color=YELLOW): "-interview",
+    Tag(name="Live", color=GREEN): "-live",
+    Tag(name="Lyrics", color=BLUE): "-lyrics",
     Tag(name="Video", color=PURPLE): "-video",
 }
 
@@ -101,7 +107,7 @@ for arg in args:
     # Remove existing tags from the tags defined in this script
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     for tag in get_all_tags(file=str(path)):
-        if tag in MV_TAGS.keys():
+        if tag.name in [mv_tag.name for mv_tag in MV_TAGS.keys()]:
             remove_tag(tag, file=str(path))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
