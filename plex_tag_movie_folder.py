@@ -107,8 +107,8 @@ HAS_EXTRAS_TAGS = {
 # MARK: Functions
 
 
-def has_movie_suffix(path: Path) -> bool:
-    return path.suffix.lower() in MOVIE_SUFFIXES
+# def has_movie_suffix(path: Path) -> bool:
+#     return path.suffix.lower() in MOVIE_SUFFIXES
 
 
 # TODO: Figure out if this is even true
@@ -135,36 +135,39 @@ def is_extra(path: Path, sub_path: Path, suffix: str, parent_dir_name: str) -> b
 args = argv[1:]
 for arg in args:
 
-    P_movie = Path(arg)
+    P_movie_dir = Path(arg)
 
     # Ensure a directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    if not P_movie.is_dir():
-        print(f"🛑 {P_movie.name} 👉 Not a directory")
+    if not P_movie_dir.is_dir():
+        print(f"🛑 {P_movie_dir.name} 👉 Not a directory")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # print(glob(str(P_movie_dir / "**/*"), recursive=True))
+    # exit()
+
     # 🏷️ Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=str(P_movie)):
+    for tag in get_all_tags(file=str(P_movie_dir)):
         if tag in [
             *HAS_EXTRAS_TAGS.keys(),
             T_HAS_NO_MOVIES,
             T_HAS_MULTIPLE_MOVIES,
         ]:
-            remove_tag(tag, file=str(P_movie))
+            remove_tag(tag, file=str(P_movie_dir))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # 📁 Loop through the directory and determine the appropriate tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Plex doesn't care about the number of movies in a folder
-    # But Radarr does and I do too (I try to avoid multiple movies in a folder)
+    # But Radarr does, so don't do it
     cnt_movies = 0
     cnt_extras = 0
 
-    for sub in glob(str(P_movie / "**/*"), recursive=True):
-        print(f"🔎 Checking 👉 {sub}")
-        P_sub = Path(sub)
+    for sub_path in glob(str(P_movie_dir / "**/*"), recursive=True):
+        print(f"🔎 Checking 👉 {sub_path}")
+        P_sub = Path(sub_path)
         # Skip anything not a file
         if not P_sub.is_file():
             print(f"🛑 {P_sub.name} 👉 Not a file")
@@ -174,21 +177,21 @@ for arg in args:
             print(f"🛑 {P_sub.name} 👉 Ignored")
             continue
         # Skip if it's not a movie
-        if not has_movie_suffix(P_sub):
+        if not P_sub.suffix.lower() in MOVIE_SUFFIXES:
             continue
         else:
             cnt_movies += 1
         for tag, [stem_suffix, parent_dir_name] in HAS_EXTRAS_TAGS.items():
-            if is_extra(P_movie, P_sub, stem_suffix, parent_dir_name):
+            if is_extra(P_movie_dir, P_sub, stem_suffix, parent_dir_name):
                 cnt_extras += 1
-                add_tag(tag, file=str(P_movie))
-                print(f"〘{tag.name}〛👉 {P_movie.name}")
+                add_tag(tag, file=str(P_movie_dir))
+                print(f"〘{tag.name}〛👉 {P_movie_dir.name}")
                 continue
 
     cnt_movies_not_extras = cnt_movies - cnt_extras
 
     if 0 == cnt_movies_not_extras:
-        add_tag(T_HAS_NO_MOVIES, file=str(P_movie))
+        add_tag(T_HAS_NO_MOVIES, file=str(P_movie_dir))
     elif 1 < cnt_movies_not_extras:
-        add_tag(T_HAS_MULTIPLE_MOVIES, file=str(P_movie))
+        add_tag(T_HAS_MULTIPLE_MOVIES, file=str(P_movie_dir))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
