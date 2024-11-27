@@ -19,8 +19,10 @@
 
 # MARK: Imports
 
+from ast import Str
 from operator import itemgetter
-from pathlib import Path
+from os import PathLike
+from pathlib import Path, PurePath
 from sys import argv
 
 from macos_tags import Color, Tag
@@ -78,11 +80,30 @@ MV_TAGS = {
 # MARK: Functions
 
 
-def get_stem_suffix(fp: Path) -> str:
-    partitoned_stem = str.rpartition(fp.stem, "-")
+def get_stem_suffix(file: PathLike) -> str:
+    file = PurePath(file)
+    partitoned_stem = str.rpartition(file.stem, "-")
     if partitoned_stem[1] == "":
         return ""
     return "-" + partitoned_stem[2]
+
+
+def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
+    file = PurePath(file)
+    for tag in get_all_tags(file=str(file)):
+        if tag.name == tag_name:
+            remove_tag(tag, file=str(file))
+            break
+
+
+def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
+    file = PurePath(file)
+    if 1 == len(tag_names):
+        remove_tag_by_name(tag_names[0], file=file)
+        return
+    for tag in get_all_tags(file=str(file)):
+        if tag.name in tag_names:
+            remove_tag(tag, file=str(file))
 
 
 # MARK: The Loop
@@ -107,9 +128,7 @@ for arg in args:
 
     # Remove existing tags from the tags defined in this script
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=str(path)):
-        if tag.name in [mv_tag.name for mv_tag in MV_TAGS.keys()]:
-            remove_tag(tag, file=str(path))
+    remove_tags_by_name([mv_tag.name for mv_tag in MV_TAGS.keys()], file=path)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Add the applicable tags. Each is exclusive (one-per-file)

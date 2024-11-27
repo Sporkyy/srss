@@ -20,7 +20,8 @@
 
 from glob import glob
 from operator import itemgetter
-from pathlib import Path
+from os import PathLike
+from pathlib import Path, PurePath
 from sys import argv
 
 from macos_tags import Color, Tag
@@ -110,6 +111,24 @@ HAS_EXTRAS_TAGS = {
 
 # def has_movie_suffix(path: Path) -> bool:
 #     return path.suffix.lower() in MOVIE_SUFFIXES
+
+
+def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
+    file = PurePath(file)
+    for tag in get_all_tags(file=str(file)):
+        if tag.name == tag_name:
+            remove_tag(tag, file=str(file))
+            break
+
+
+def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
+    file = PurePath(file)
+    if 1 == len(tag_names):
+        remove_tag_by_name(tag_names[0], file=file)
+        return
+    for tag in get_all_tags(file=str(file)):
+        if tag.name in tag_names:
+            remove_tag(tag, file=str(file))
 
 
 # TODO: Figure out if this is even true

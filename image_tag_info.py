@@ -9,7 +9,8 @@
 # MARK: Imports
 
 from operator import itemgetter
-from pathlib import Path
+from os import PathLike, remove
+from pathlib import Path, PurePath
 from re import search as re_search
 from sys import argv
 
@@ -56,8 +57,45 @@ IMAGE_SUFFIXES = [
 # MARK: Functions
 
 
-def ratio(w: int, h: int) -> float:
+def get_aspect_ratio(w: int, h: int) -> float:
     return w / h
+
+
+def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
+    file = PurePath(file)
+    for tag in get_all_tags(file=str(file)):
+        if tag.name == tag_name:
+            remove_tag(tag, file=str(file))
+            break
+
+
+def remove_tag_by_name_re(tag_name_re: str, file: PathLike) -> None:
+    file = PurePath(file)
+    for tag in get_all_tags(file=str(file)):
+        results = re_search(tag_name_re, tag.name)
+        if results:
+            remove_tag(tag, file=str(file))
+
+
+def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
+    file = PurePath(file)
+    if 1 == len(tag_names):
+        remove_tag_by_name(tag_names[0], file=file)
+        return
+    for tag in get_all_tags(file=str(file)):
+        if tag.name in tag_names:
+            remove_tag(tag, file=str(file))
+
+
+def remove_tags_by_name_re(tag_names: list[str], file: PathLike) -> None:
+    file = PurePath(file)
+    if 1 == len(tag_names):
+        remove_tag_by_name_re(tag_names[0], file=file)
+        return
+    for tag in get_all_tags(file=str(file)):
+        for tag_name in tag_names:
+            if re_search(tag_name, tag.name):
+                remove_tag(tag, file=str(file))
 
 
 # MARK: The Loop
@@ -82,11 +120,14 @@ for arg in args:
 
     # Remove any pre-existing tags (that look like they were set by this script)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=str(path)):
-        if tag in [T_CORRUPT, *ORIENTATION_TAGS.keys()] or re_search(
-            r"\d+x\d+", tag.name
-        ):
-            remove_tag(tag, file=str(path))
+    remove_tags_by_name(
+        [
+            T_CORRUPT.name,
+            *[mv_tag.name for mv_tag in ORIENTATION_TAGS.keys()],
+        ],
+        file=path,
+    )
+    remove_tag_by_name_re(r"\d+x\d+", file=path)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Try to get the dimensinos or kkip and tag the path if the image is corrupt
@@ -109,7 +150,7 @@ for arg in args:
 
     # Add the appropriate tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    img_ratio = ratio(img_width, img_height)
+    img_ratio = get_aspect_ratio(img_width, img_height)
 
     # Set the orientation tags
     for tag, test in ORIENTATION_TAGS.items():
