@@ -39,6 +39,7 @@ MV_FILE_SUFFIXES = [
     ".mp4",
     ".mpg",
     ".mpeg",
+    ".ts",
     ".vob",
     ".webm",
 ]

@@ -64,6 +64,7 @@ MOVIE_SUFFIXES = [
     ".mpg",
     ".mpeg",
     ".ogv",
+    ".ogm",
     ".rm",
     ".rmvb",
     ".ts",

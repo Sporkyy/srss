@@ -41,7 +41,7 @@ IGNORE_FILES = [
 # TODO: Find if ther is an official list of image suffixes for Plex
 # IMAGE_SUFFIXES = [".jpg", ".jpeg", ".png", ".tiff", ".webp"]
 
-# TODO: Find if ther is an official list of movie suffixes for Plex
+# TODO: Find if there is an official list of movie suffixes for Plex
 MOVIE_SUFFIXES = [
     ".avi",
     ".divx",
@@ -52,6 +52,7 @@ MOVIE_SUFFIXES = [
     ".mp4",
     ".mpg",
     ".mpeg",
+    ".ts",
     ".vob",
     ".webm",
 ]
