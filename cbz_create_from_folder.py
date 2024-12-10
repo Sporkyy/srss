@@ -21,6 +21,7 @@ from macos_tags import add as add_tag
 from macos_tags import get_all as get_all_tags
 from macos_tags import remove as remove_tag
 from patoolib import create_archive, test_archive
+from send2trash import send2trash
 
 # MARK: PATH Additions
 
@@ -102,7 +103,8 @@ for arg in args:
         print(f"❗️ {src.name} 👉 Error: {e}")
         add_tag(T_SRC_ZIP_FAILED, file=str(src))
         if dst.exists():
-            remove(dst)
+            # remove(dst)
+            send2trash(dst)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # ✅ Test the CBZ
@@ -120,7 +122,8 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         if dst.exists() and T_DST_VALID in get_all_tags(file=str(dst)):
-            rmtree(src)
+            # rmtree(src)
+            send2trash(src)
     except Exception as e:
         print(f"🛑 {src.name} 👉 {e}")
         add_tag(T_SRC_REMOVE_FAILED, file=str(src))
