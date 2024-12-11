@@ -25,9 +25,9 @@ from pathlib import Path, PurePath
 from sys import argv
 
 from macos_tags import Color, Tag
-from macos_tags import add as add_tag
-from macos_tags import get_all as get_all_tags
-from macos_tags import remove as remove_tag
+from macos_tags import add as add_tag_original
+from macos_tags import get_all as get_all_tags_original
+from macos_tags import remove as remove_tag_original
 
 # MARK: Constants
 
@@ -109,15 +109,34 @@ HAS_EXTRAS_TAGS = {
 # MARK: Functions
 
 
+# `macos_tags` Extensions adding `PathLike` Support
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# Extend `macos_tags.add` to accept a `PathLike` object
+def add_tag(tag: Tag, file: Union[PathLike, str]) -> None:
+    add_tag_original(tag, file=str(file))
+
+
+# Extend `macos_tags.get_all_tags` to accept a `PathLike` object
+def get_all_tags(file: Union[PathLike, str]) -> list[Tag]:
+    return get_all_tags_original(file=str(file))
+
+
+# Extend `macos_tags.remove` to accept a `PathLike` object
+def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
+    remove_tag_original(file=str(file), tag=tag)
+
+
+# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 # def has_movie_suffix(path: Path) -> bool:
 #     return path.suffix.lower() in MOVIE_SUFFIXES
 
 
 def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
     file = PurePath(file)
-    for tag in get_all_tags(file=str(file)):
+    for tag in get_all_tags(file=file):
         if tag.name == tag_name:
-            remove_tag(tag, file=str(file))
+            remove_tag(tag, file=file)
             break
 
 
@@ -126,9 +145,9 @@ def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
     if 1 == len(tag_names):
         remove_tag_by_name(tag_names[0], file=file)
         return
-    for tag in get_all_tags(file=str(file)):
+    for tag in get_all_tags(file=file):
         if tag.name in tag_names:
-            remove_tag(tag, file=str(file))
+            remove_tag(tag, file=file)
 
 
 # TODO: Figure out if this is even true
@@ -169,13 +188,13 @@ for arg in args:
 
     # 🏷️ Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=str(P_movie_dir)):
+    for tag in get_all_tags(file=P_movie_dir):
         if tag in [
             *HAS_EXTRAS_TAGS.keys(),
             T_HAS_NO_MOVIES,
             T_HAS_MULTIPLE_MOVIES,
         ]:
-            remove_tag(tag, file=str(P_movie_dir))
+            remove_tag(tag, file=P_movie_dir)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # 📁 Loop through the directory and determine the appropriate tags
@@ -204,14 +223,14 @@ for arg in args:
         for tag, [stem_suffix, parent_dir_name] in HAS_EXTRAS_TAGS.items():
             if is_extra(P_movie_dir, P_sub, stem_suffix, parent_dir_name):
                 cnt_extras += 1
-                add_tag(tag, file=str(P_movie_dir))
+                add_tag(tag, file=P_movie_dir)
                 print(f"〘{tag.name}〛👉 {P_movie_dir.name}")
                 continue
 
     cnt_movies_not_extras = cnt_movies - cnt_extras
 
     if 0 == cnt_movies_not_extras:
-        add_tag(T_HAS_NO_MOVIES, file=str(P_movie_dir))
+        add_tag(T_HAS_NO_MOVIES, file=P_movie_dir)
     elif 1 < cnt_movies_not_extras:
-        add_tag(T_HAS_MULTIPLE_MOVIES, file=str(P_movie_dir))
+        add_tag(T_HAS_MULTIPLE_MOVIES, file=P_movie_dir)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

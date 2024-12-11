@@ -22,9 +22,9 @@ from typing import Sequence, Union
 from zipfile import ZipFile
 
 from macos_tags import Color, Tag
-from macos_tags import add as original_add_tag
-from macos_tags import get_all as original_get_all_tags
-from macos_tags import remove as original_remove_tag
+from macos_tags import add as add_tag_original
+from macos_tags import get_all as get_all_tags_original
+from macos_tags import remove as remove_tag_original
 
 # MARK: Constants
 ARCHIVE_SUFFIXES = [
@@ -37,25 +37,22 @@ BLUE = itemgetter("BLUE")(Color)
 # MARK: Functions
 
 
-# Same as the macos_tags.add function but with the file parameter can also be
-# a PathLike object
-def add_tag(tag: Tag, file: Union[str, PathLike]) -> None:
-    original_add_tag(tag, file=str(file))
+# Extend `macos_tags.add` to accept a `PathLike` object
+def add_tag(tag: Tag, file: Union[PathLike, str]) -> None:
+    add_tag_original(tag, file=str(file))
 
 
-# Same as the macos_tags.remove function but with the file parameter can also be
-# a PathLike object
-def remove_tag(tag: Tag, file: Union[str, PathLike]) -> None:
-    original_remove_tag(file=str(file), tag=tag)
+# Extend `macos_tags.get_all_tags` to accept a `PathLike` object
+def get_all_tags(file: Union[PathLike, str]) -> list[Tag]:
+    return get_all_tags_original(file=str(file))
 
 
-# Same as the macos_tags.get_all_tags function but with the file parameter can also be
-# a PathLike object
-def get_all_tags(file: Union[str, PathLike]) -> list[Tag]:
-    return original_get_all_tags(file=str(file))
+# Extend `macos_tags.remove` to accept a `PathLike` object
+def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
+    remove_tag_original(file=str(file), tag=tag)
 
 
-def is_hidden(path: Union[str, PathLike]) -> bool:
+def is_hidden(path: Union[PathLike, str]) -> bool:
     return PurePath(path).stem.startswith(".")
 
 
