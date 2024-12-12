@@ -23,6 +23,7 @@ from operator import itemgetter
 from os import PathLike
 from pathlib import Path, PurePath
 from sys import argv
+from typing import Union
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag_original
