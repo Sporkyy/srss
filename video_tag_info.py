@@ -55,6 +55,7 @@ ORIENTATION_TAGS = {
 }
 
 MOVIE_SUFFIXES = [
+    ".asf",
     ".avi",
     ".divx",
     ".flv",
@@ -71,6 +72,7 @@ MOVIE_SUFFIXES = [
     ".ts",
     ".vob",
     ".webm",
+    ".wmv",
 ]
 
 # MARK: Functions
