@@ -57,6 +57,12 @@ def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
 
 
+def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
+    for tag in get_all_tags(file):
+        if tag in tags:
+            remove_tag(tag, file)
+
+
 # MARK: The Loop
 args = argv[1:]
 for arg in args:
@@ -78,9 +84,7 @@ for arg in args:
 
     # Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=src):
-        if tag in [T_VALID, T_CORRUPT, T_COLLISON]:
-            remove_tag(tag, file=src)
+    remove_tags([T_VALID, T_CORRUPT, T_COLLISON], file=src)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Ensure the extension is lowercase
