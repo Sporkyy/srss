@@ -34,9 +34,9 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 # To share the tags between scripts, copy+paste becase each script must be standalone
-T_VALID = Tag(name="Valid Comic", color=GREEN)
-T_CORRUPT = Tag(name="Corrupt Comic", color=RED)
-T_COLLISION = Tag(name="Collision", color=YELLOW)
+TAG_VALID = Tag(name="Valid Comic", color=GREEN)
+TAG_CORRUPT = Tag(name="Corrupt Comic", color=RED)
+TAG_COLLISION = Tag(name="Collision", color=YELLOW)
 
 # MARK: Functions
 
@@ -89,7 +89,7 @@ for parent, files in grouped.items():
 
     if dst.is_file():
         print(f"🛑 COLLISION! {dst.name} 👉 Already exists")
-        add_tag(T_COLLISION, file=dst)
+        add_tag(TAG_COLLISION, file=dst)
         continue
 
     print(f"📦 Creating: {dst}")
@@ -105,12 +105,12 @@ for parent, files in grouped.items():
     try:
         test_archive(dst)
         print(f"✅ Verified: {dst}")
-        add_tag(T_VALID, file=dst)
+        add_tag(TAG_VALID, file=dst)
         print(f"🗑️ Deleting: {files}")
         send2trash(files)
     except Exception as e:
         print(f"❗️ Error: {e}")
-        add_tag(T_CORRUPT, file=dst)
+        add_tag(TAG_CORRUPT, file=dst)
         print(f"🗑️ Deleting: {dst}")
         send2trash(dst)
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

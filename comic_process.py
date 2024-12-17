@@ -35,9 +35,9 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 
-T_VALID = Tag(name="Valid Comic", color=GREEN)
-T_CORRUPT = Tag(name="Corrupt Comic", color=RED)
-T_COLLISON = Tag(name="Collision", color=YELLOW)
+TAG_VALID = Tag(name="Valid Comic", color=GREEN)
+TAG_CORRUPT = Tag(name="Corrupt Comic", color=RED)
+TAG_COLLISON = Tag(name="Collision", color=YELLOW)
 
 # MARK: Functions
 
@@ -84,7 +84,7 @@ for arg in args:
 
     # Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    remove_tags([T_VALID, T_CORRUPT, T_COLLISON], file=src)
+    remove_tags([TAG_VALID, TAG_CORRUPT, TAG_COLLISON], file=src)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Ensure the extension is lowercase
@@ -102,7 +102,7 @@ for arg in args:
     if ".cbr" == src.suffix and is_zipfile(src):
         dst = src.with_suffix(".cbz")
         if dst.exists():
-            add_tag(T_COLLISON, file=src)
+            add_tag(TAG_COLLISON, file=src)
             print(f"⚠️ {src.name} 👉 Collision ({dst.name})")
             continue
         else:
@@ -112,7 +112,7 @@ for arg in args:
     elif ".cbz" == src.suffix and is_rarfile(src):
         dst = src.with_suffix(".cbr")
         if dst.exists():
-            add_tag(T_COLLISON, file=src)
+            add_tag(TAG_COLLISON, file=src)
             print(f"⚠️ {src.name} 👉 Collides with {dst.name}")
             continue
         else:
@@ -126,7 +126,7 @@ for arg in args:
     if ".cbr" == src.suffix and is_rarfile(src):
         dst = src.with_suffix(".cbz")
         if dst.exists():
-            add_tag(T_COLLISON, file=src)
+            add_tag(TAG_COLLISON, file=src)
             print(f"⚠️ Collision 👉 {src.name} 💥 ({dst.name})")
             continue
         else:
@@ -136,7 +136,7 @@ for arg in args:
                 send2trash(src)
                 src = dst
             except Exception as e:
-                add_tag(T_CORRUPT, file=src)
+                add_tag(TAG_CORRUPT, file=src)
                 print(f"🛑 {src.name} 👉 Failed repack")
                 print(e)
                 continue
@@ -146,10 +146,10 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         test_archive(str(src))
-        add_tag(T_VALID, file=src)
+        add_tag(TAG_VALID, file=src)
         print(f"✅ {src.name} 👉 Valid")
     except Exception as e:
-        add_tag(T_CORRUPT, file=src)
+        add_tag(TAG_CORRUPT, file=src)
         print(f"🛑 {src.name} 👉 Corrupt ")
         print(e)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

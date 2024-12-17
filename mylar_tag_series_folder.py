@@ -50,11 +50,11 @@ MYLAR_FILES_TAGS = {
 }
 
 # Big problems (manual intervention required)
-T_HAS_COMICS = Tag(name="Has comics", color=BLUE)
+TAG_HAS_COMICS = Tag(name="Has comics", color=BLUE)
 # Little problems (manually trigger Mylar to fix)
 
 # Curiosities (no action required, but maybe take a look)
-T_HAS_SERIES_TYPE_MISMATCH = Tag(name="Has series type mismatch", color=YELLOW)
+TAG_HAS_SERIES_TYPE_MISMATCH = Tag(name="Has series type mismatch", color=YELLOW)
 
 # MARK: Functions
 
@@ -84,8 +84,8 @@ for arg in args:
     for tag in get_all_tags(file=str(P_series_dir)):
         if tag in [
             *MYLAR_FILES_TAGS.keys(),
-            T_HAS_COMICS,
-            T_HAS_SERIES_TYPE_MISMATCH,
+            TAG_HAS_COMICS,
+            TAG_HAS_SERIES_TYPE_MISMATCH,
         ]:
             remove_tag(tag, file=str(P_series_dir))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -103,8 +103,8 @@ for arg in args:
                     add_tag(tag, file=str(P_series_dir))
                     break
             if P_entry.suffix.lower() in COMIC_FILE_SUFFIXES:
-                if not T_HAS_COMICS in get_all_tags(str(P_series_dir)):
-                    add_tag(T_HAS_COMICS, file=str(P_series_dir))
+                if not TAG_HAS_COMICS in get_all_tags(str(P_series_dir)):
+                    add_tag(TAG_HAS_COMICS, file=str(P_series_dir))
                 if series_type != get_series_type(P_entry):
-                    add_tag(T_HAS_SERIES_TYPE_MISMATCH, file=str(P_series_dir))
+                    add_tag(TAG_HAS_SERIES_TYPE_MISMATCH, file=str(P_series_dir))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

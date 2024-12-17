@@ -8,13 +8,11 @@
 
 # MARK: Imports
 
-from glob import glob
+from glob import glob as glob_original
 from operator import itemgetter
-from os import PathLike, chdir, environ, pathsep, remove
+from os import PathLike, chdir, environ, pathsep
 from os.path import relpath
 from pathlib import Path
-from shutil import rmtree
-from subprocess import run
 from sys import argv
 from typing import Union
 
@@ -25,9 +23,9 @@ from macos_tags import remove as remove_tag_original
 from patoolib import create_archive, test_archive
 from send2trash import send2trash
 
-# MARK: PATH Additions
+# MARK: Path
 
-# To allow `patoolib` to find the binaries from Homebrew
+# Add Homebrew locations to the path for `patoolib`
 environ["PATH"] += pathsep + "/usr/local/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/bin"
 environ["PATH"] += pathsep + "/opt/homebrew/sbin"
@@ -36,44 +34,53 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
 
-T_DST_CORRUPT = Tag(name="Corrupt Comic", color=RED)
+TAG_CORRUPT = Tag(name="Corrupt Comic", color=RED)
 
-T_DST_VALID = Tag(name="Valid Comic", color=GREEN)
+TAG_VALID = Tag(name="Valid Comic", color=GREEN)
 
-T_SRC_DST_COLLISION = Tag(name="Collision", color=YELLOW)
+TAG_COLLISION = Tag(name="Collision", color=YELLOW)
 
-T_SRC_REMOVE_FAILED = Tag(name="Failed Cleanup", color=RED)
+TAG_CLEANUP_FAILED = Tag(name="Failed Cleanup", color=RED)
 
-T_SRC_ZIP_FAILED = Tag(name="Failed Creation", color=RED)
+TAG_FAILED_ARCHIVE_CREATION = Tag(name="Failed Creation", color=RED)
 
-# MARK: Functions
+# MARK: Extensions
 
 
-# `macos_tags` Extensions adding `PathLike` Support
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-# Extend `macos_tags.add` to accept a `PathLike` object
+# Extend `macos_tags.add` to accept `PathLike` objects
 def add_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     add_tag_original(tag, file=str(file))
 
 
-# Extend `macos_tags.get_all_tags` to accept a `PathLike` object
+# Extend `macos_tags.get_all_tags` to accept `PathLike` objects
 def get_all_tags(file: Union[PathLike, str]) -> list[Tag]:
     return get_all_tags_original(file=str(file))
 
 
-# Extend `macos_tags.remove` to accept a `PathLike` object
+# Extend `macos_tags.remove` to accept `PathLike` objects
 def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
 
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+# Extend `glob` to accept `PathLike` objects
+def glob(pathname: Union[PathLike, str], **kwargs) -> list[str]:
+    return glob_original(str(pathname), **kwargs)
+
+
+# MARK: Functions
+
+
+def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
+    for tag in get_all_tags(file):
+        if tag in tags:
+            remove_tag(tag, file)
 
 
 def get_descendant_file_relative_paths(dir: Union[PathLike, str]) -> list[str]:
     dir = Path(dir)
     if not dir.is_dir():
         return []
-    descendants = glob(str(dir / "**"), recursive=True)
+    descendants = glob(dir / "**", recursive=True)
     files = [f for f in descendants if Path(f).is_file()]
     relative_paths = [relpath(fp, dir) for fp in files]
     return relative_paths
@@ -93,41 +100,45 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # 🛩️ Determine the destination
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     # Not using `with_suffix` below in case the `src` dir has dot(s) in the name
     dst = Path(f"{src}.cbz")
     print(f"📂 {src} ➡️ {dst}")
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # 💥 Ensure no collision
+    # 💥 Ensure no collision at the desination
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if dst.exists():
         print(f"🛑 {dst} 👉 Collision")
-        add_tag(T_SRC_DST_COLLISION, file=src)
+        add_tag(TAG_COLLISION, file=src)
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # 🏷️ Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    for tag in get_all_tags(file=src):
-        if tag in [
-            T_SRC_ZIP_FAILED,
-            T_SRC_REMOVE_FAILED,
-            T_SRC_DST_COLLISION,
-            T_DST_CORRUPT,
-            T_DST_VALID,
-        ]:
-            remove_tag(tag, file=src)
+    remove_tags(
+        [
+            TAG_FAILED_ARCHIVE_CREATION,
+            TAG_CLEANUP_FAILED,
+            TAG_COLLISION,
+            TAG_CORRUPT,
+            TAG_VALID,
+        ],
+        file=src,
+    )
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # 📕 Create the CBZ
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         files = get_descendant_file_relative_paths(src)
-        print(files)
-        chdir(src)
+        # print(files)
+        chdir(src)  # Don't forget to change to the source directory
         create_archive(dst, files)
     except Exception as e:
         print(f"❗️ Error: {e}")
-        add_tag(T_SRC_ZIP_FAILED, file=src)
+        add_tag(TAG_FAILED_ARCHIVE_CREATION, file=src)
         if dst.exists():
             send2trash(dst)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -135,20 +146,20 @@ for arg in args:
     # ✅ Test the CBZ
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
-        test_archive(str(dst))
+        test_archive(dst)
         print(f"✅ {dst.name} 👉 Valid")
-        add_tag(T_DST_VALID, dst)
+        add_tag(TAG_VALID, dst)
     except Exception as e:
         print(f"🛑 {dst.name} 👉 {e}")
-        add_tag(T_DST_CORRUPT, dst)
+        add_tag(TAG_CORRUPT, dst)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # 🗑️ Remove the source directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
-        if dst.exists() and T_DST_VALID in get_all_tags(file=dst):
+        if dst.exists() and TAG_VALID in get_all_tags(file=dst):
             send2trash(src)
     except Exception as e:
         print(f"🛑 {src.name} 👉 {e}")
-        add_tag(T_SRC_REMOVE_FAILED, file=src)
+        add_tag(TAG_CLEANUP_FAILED, file=src)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

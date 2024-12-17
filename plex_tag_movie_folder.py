@@ -68,8 +68,8 @@ BLUE, RED = itemgetter("BLUE", "RED")(Color)
 # e.g. `The Matrix (1999) {imdb-tt0133093}`
 
 # Tags based on the number of movies in the folder
-T_HAS_NO_MOVIES = Tag(name="Has no movies", color=RED)
-T_HAS_MULTIPLE_MOVIES = Tag(name="Has multiple movies", color=RED)
+TAG_HAS_NO_MOVIES = Tag(name="Has no movies", color=RED)
+TAG_HAS_MULTIPLE_MOVIES = Tag(name="Has multiple movies", color=RED)
 # Tags based on the presence of Plex extras
 HAS_EXTRAS_TAGS = {
     Tag(name="Has behind the scenes", color=BLUE): [
@@ -192,8 +192,8 @@ for arg in args:
     for tag in get_all_tags(file=P_movie_dir):
         if tag in [
             *HAS_EXTRAS_TAGS.keys(),
-            T_HAS_NO_MOVIES,
-            T_HAS_MULTIPLE_MOVIES,
+            TAG_HAS_NO_MOVIES,
+            TAG_HAS_MULTIPLE_MOVIES,
         ]:
             remove_tag(tag, file=P_movie_dir)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -231,7 +231,7 @@ for arg in args:
     cnt_movies_not_extras = cnt_movies - cnt_extras
 
     if 0 == cnt_movies_not_extras:
-        add_tag(T_HAS_NO_MOVIES, file=P_movie_dir)
+        add_tag(TAG_HAS_NO_MOVIES, file=P_movie_dir)
     elif 1 < cnt_movies_not_extras:
-        add_tag(T_HAS_MULTIPLE_MOVIES, file=P_movie_dir)
+        add_tag(TAG_HAS_MULTIPLE_MOVIES, file=P_movie_dir)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

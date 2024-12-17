@@ -46,7 +46,7 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
     "GRAY",
 )(Color)
 
-T_CORRUPT = Tag(name="Corrupt", color=RED)
+TAG_CORRUPT = Tag(name="Corrupt", color=RED)
 
 ORIENTATION_TAGS = {
     Tag(name="Portrait", color=ORANGE): lambda ratio: ratio < 1,
@@ -163,7 +163,7 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     remove_tags_by_name(
         [
-            T_CORRUPT.name,
+            TAG_CORRUPT.name,
             *[mv_tag.name for mv_tag in ORIENTATION_TAGS.keys()],
         ],
         file=path,
@@ -185,7 +185,7 @@ for arg in args:
     except Exception as e:
         print(f"🚫 {path.name} 👉 corrupt")
         print(e)
-        add_tag(T_CORRUPT, file=path)
+        add_tag(TAG_CORRUPT, file=path)
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
