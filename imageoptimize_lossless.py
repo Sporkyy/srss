@@ -48,8 +48,8 @@ args = argv[1:]
 for arg in args:
     result = run(
         ["open", "-a", "ImageOptim", arg],
-        capture_output=True,
-        text=True,
+        # capture_output=True,
+        # text=True,
     )
     print(result)
 
