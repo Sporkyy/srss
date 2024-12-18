@@ -10,7 +10,7 @@
 # MARK: Imports
 
 from operator import itemgetter
-from os import PathLike, environ, pathsep, remove, rename
+from os import PathLike, environ, pathsep, rename
 from pathlib import Path
 from sys import argv
 from typing import Union
@@ -33,11 +33,12 @@ environ["PATH"] += pathsep + "/opt/homebrew/sbin"
 
 # MARK: Constants
 
-GREEN, RED, YELLOW = itemgetter("GREEN", "RED", "YELLOW")(Color)
+GREEN, ORANGE, RED, YELLOW = itemgetter("GREEN", "ORANGE", "RED", "YELLOW")(Color)
 
 TAG_VALID = Tag(name="Valid Comic", color=GREEN)
 TAG_CORRUPT = Tag(name="Corrupt Comic", color=RED)
 TAG_COLLISON = Tag(name="Collision", color=YELLOW)
+TAG_REPACK_FAILED = Tag(name="Repack Failed", color=ORANGE)
 
 # MARK: Functions
 
@@ -75,25 +76,32 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Skip if not a comic book archive
+    # Enfore a lowercase suffix
+    # (Check for collisions since the Library is on Linux now)
+    # (i.e. case-sensitive)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    if not src.suffix.lower() in [".cbz", ".cbr"]:
+    dst = src.with_suffix(src.suffix.lower())
+    if src != dst:
+        if not dst.exists():
+            print(f"⬇️ {src.name} 👉 Downcased suffix ({src.suffix})")
+            rename(src, dst)
+            src = dst
+        else:
+            print(f"⚠️ {src.name} 👉 Collision ({dst.name})")
+            add_tag(TAG_COLLISON, file=src)
+            continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # Skip if suffix is not a `.cbz` or `.cbr`
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not src.suffix in [".cbz", ".cbr"]:
         print(f"🛑 {src.name} 👉 Unrecognized suffix ({src.suffix})")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    remove_tags([TAG_VALID, TAG_CORRUPT, TAG_COLLISON], file=src)
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-    # Ensure the extension is lowercase
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    if src.suffix.lower() != src.suffix:
-        print(f"⬇️ {src.name} 👉 Downcased suffix ({src.suffix.lower()})")
-        dst = src.with_suffix(src.suffix.lower())
-        rename(src, dst)
-        src = dst
+    remove_tags([TAG_VALID, TAG_CORRUPT, TAG_COLLISON, TAG_REPACK_FAILED], file=src)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Fix extension if necessary
@@ -136,8 +144,8 @@ for arg in args:
                 send2trash(src)
                 src = dst
             except Exception as e:
-                add_tag(TAG_CORRUPT, file=src)
-                print(f"🛑 {src.name} 👉 Failed repack")
+                add_tag(TAG_REPACK_FAILED, file=src)
+                print(f"🛑 {src.name} 👉 Repack failed")
                 print(e)
                 continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -145,7 +153,7 @@ for arg in args:
     # Tag the comic as valid or corrupt
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
-        test_archive(str(src))
+        test_archive(src)
         add_tag(TAG_VALID, file=src)
         print(f"✅ {src.name} 👉 Valid")
     except Exception as e:
