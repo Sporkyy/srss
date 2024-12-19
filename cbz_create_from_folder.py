@@ -44,7 +44,7 @@ TAG_CLEANUP_FAILED = Tag(name="Failed Cleanup", color=RED)
 
 TAG_FAILED_ARCHIVE_CREATION = Tag(name="Failed Creation", color=RED)
 
-# MARK: Extensions
+# MARK: Functions
 
 
 # Extend `macos_tags.add` to accept `PathLike` objects
@@ -62,18 +62,19 @@ def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
 
 
-# Extend `glob` to accept `PathLike` objects
+# Extend `glob.glob` to accept `PathLike` objects
 def glob(pathname: Union[PathLike, str], **kwargs) -> list[str]:
     return glob_original(str(pathname), **kwargs)
-
-
-# MARK: Functions
 
 
 def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
     for tag in get_all_tags(file):
         if tag in tags:
             remove_tag(tag, file)
+
+
+def has_tag(tag: Tag, file: Union[PathLike, str]) -> bool:
+    return tag in get_all_tags(file)
 
 
 def get_descendant_file_relative_paths(dir: Union[PathLike, str]) -> list[str]:
@@ -92,7 +93,15 @@ for arg in args:
 
     src = Path(arg).resolve()
 
-    # 📁 Ensure a directory
+    # 🚨 Ensure it exists
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    if not src.exists():
+        print(f"🛑 {src} 👉 Does not exist")
+        # No tag; this shouldn't happen when run as a Shortcut
+        continue
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+    # 📁 Ensure it's a directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     if not src.is_dir():
         print(f"🛑 {src} 👉 Not a directory")
@@ -157,7 +166,7 @@ for arg in args:
     # 🗑️ Remove the source directory
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
-        if dst.exists() and TAG_VALID in get_all_tags(file=dst):
+        if dst.exists() and has_tag(TAG_VALID, dst):
             send2trash(src)
     except Exception as e:
         print(f"🛑 {src.name} 👉 {e}")
