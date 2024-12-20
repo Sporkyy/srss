@@ -11,6 +11,8 @@
 from operator import itemgetter
 from os import PathLike, environ, pathsep
 from pathlib import Path, PurePath
+from re import Pattern
+from re import compile as re_compile
 from re import search as re_search
 from sys import argv
 from typing import Union
@@ -78,8 +80,6 @@ MOVIE_SUFFIXES = [
 # MARK: Functions
 
 
-# `macos_tags` Extensions adding `PathLike` Support
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 # Extend `macos_tags.add` to accept a `PathLike` object
 def add_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     add_tag_original(tag, file=str(file))
@@ -95,14 +95,11 @@ def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
 
 
-# =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-
 def get_aspect_ratio(w: int, h: int) -> float:
     return w / h
 
 
-def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
+def remove_tag_by_name(tag_name: str, file: Union[PathLike, str]) -> None:
     file = PurePath(file)
     for tag in get_all_tags(file=file):
         if tag.name == tag_name:
@@ -110,7 +107,11 @@ def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
             break
 
 
-def remove_tag_by_name_re(tag_name_re: str, file: PathLike) -> None:
+def remove_tag_by_re(
+    tag_name_re: Union[Pattern, str], file: Union[PathLike, str]
+) -> None:
+    if isinstance(tag_name_re, str):
+        tag_name_re = re_compile(tag_name_re)
     file = PurePath(file)
     for tag in get_all_tags(file=file):
         results = re_search(tag_name_re, tag.name)
@@ -118,7 +119,7 @@ def remove_tag_by_name_re(tag_name_re: str, file: PathLike) -> None:
             remove_tag(tag, file=file)
 
 
-def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
+def remove_tags_by_name(tag_names: list[str], file: Union[PathLike, str]) -> None:
     file = PurePath(file)
     if 1 == len(tag_names):
         remove_tag_by_name(tag_names[0], file=file)
@@ -128,10 +129,12 @@ def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
             remove_tag(tag, file=file)
 
 
-def remove_tags_by_name_re(tag_names: list[str], file: PathLike) -> None:
+def remove_tags_by_re(
+    tag_names: list[Union[Pattern, str]], file: Union[PathLike, str]
+) -> None:
     file = PurePath(file)
     if 1 == len(tag_names):
-        remove_tag_by_name_re(tag_names[0], file=file)
+        remove_tag_by_re(tag_names[0], file=file)
         return
     for tag in get_all_tags(file=file):
         for tag_name in tag_names:
@@ -164,14 +167,14 @@ for arg in args:
     remove_tags_by_name(
         [
             TAG_CORRUPT.name,
-            *[mv_tag.name for mv_tag in ORIENTATION_TAGS.keys()],
+            *[tag.name for tag in ORIENTATION_TAGS.keys()],
         ],
         file=path,
     )
-    remove_tags_by_name_re(
+    remove_tags_by_re(
         [
-            r"\d+x\d+",
-            r"\d{2}:\d{2}:\d{2}",
+            re_compile(r"\d+x\d+"),
+            re_compile(r"\d{2}:\d{2}:\d{2}"),
         ],
         file=path,
     )
@@ -189,6 +192,23 @@ for arg in args:
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+    # The order in which the tags are assigned matters when sorting by tags
+    # So, I'm putting the
+    #   1. Duration
+    #   2. Orientation
+    #   3. Resolution
+
+    # Add the duration tag
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+    duration = meta["duration"]
+    duration_secs = int(duration)
+    hours, remainder = divmod(duration_secs, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    duration_tag = Tag(name=f"{hours:02}:{minutes:02}:{seconds:02}", color=BLUE)
+    add_tag(duration_tag, file=path)
+    print(f"〘{duration_tag.name}〛👉 {path.name}")
+    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
     # Add the resolution-based tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     vid_width, vid_height = meta["size"]
@@ -204,15 +224,4 @@ for arg in args:
     res_tag = Tag(name=f"{vid_width}x{vid_height}", color=GREEN)
     add_tag(res_tag, file=path)
     print(f"〘{res_tag.name}〛👉 {path.name}")
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-    # Add the duration tag
-    # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    duration = meta["duration"]
-    duration_secs = int(duration)
-    hours, remainder = divmod(duration_secs, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    duration_tag = Tag(name=f"{hours:02}:{minutes:02}:{seconds:02}", color=BLUE)
-    add_tag(duration_tag, file=path)
-    print(f"〘{duration_tag.name}〛👉 {path.name}")
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

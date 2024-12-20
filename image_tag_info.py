@@ -11,8 +11,11 @@
 from operator import itemgetter
 from os import PathLike, remove
 from pathlib import Path, PurePath
+from re import Pattern
+from re import compile as re_compile
 from re import search as re_search
 from sys import argv
+from typing import Union
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag
@@ -61,7 +64,7 @@ def get_aspect_ratio(w: int, h: int) -> float:
     return w / h
 
 
-def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
+def remove_tag_by_name(tag_name: str, file: Union[PathLike, str]) -> None:
     file = PurePath(file)
     for tag in get_all_tags(file=str(file)):
         if tag.name == tag_name:
@@ -69,15 +72,17 @@ def remove_tag_by_name(tag_name: str, file: PathLike) -> None:
             break
 
 
-def remove_tag_by_name_re(tag_name_re: str, file: PathLike) -> None:
+def remove_tag_by_re(pattern: Union[Pattern, str], file: Union[PathLike, str]) -> None:
+    if isinstance(pattern, str):
+        pattern = re_compile(pattern)
     file = PurePath(file)
     for tag in get_all_tags(file=str(file)):
-        results = re_search(tag_name_re, tag.name)
+        results = re_search(pattern, tag.name)
         if results:
             remove_tag(tag, file=str(file))
 
 
-def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
+def remove_tags_by_name(tag_names: list[str], file: Union[PathLike, str]) -> None:
     file = PurePath(file)
     if 1 == len(tag_names):
         remove_tag_by_name(tag_names[0], file=file)
@@ -87,10 +92,10 @@ def remove_tags_by_name(tag_names: list[str], file: PathLike) -> None:
             remove_tag(tag, file=str(file))
 
 
-def remove_tags_by_name_re(tag_names: list[str], file: PathLike) -> None:
+def remove_tags_by_name_re(tag_names: list[str], file: Union[PathLike, str]) -> None:
     file = PurePath(file)
     if 1 == len(tag_names):
-        remove_tag_by_name_re(tag_names[0], file=file)
+        remove_tag_by_re(tag_names[0], file=file)
         return
     for tag in get_all_tags(file=str(file)):
         for tag_name in tag_names:
@@ -127,10 +132,10 @@ for arg in args:
         ],
         file=path,
     )
-    remove_tag_by_name_re(r"\d+x\d+", file=path)
+    remove_tag_by_re(r"\d+x\d+", file=path)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-    # Try to get the dimensinos or kkip and tag the path if the image is corrupt
+    # Try to get the dimensinos or tag+skip if the image is corrupt
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         with Image.open(path) as img:
