@@ -20,7 +20,8 @@ from macos_tags import Color, Tag
 from macos_tags import add as add_tag_original
 from macos_tags import get_all as get_all_tags_original
 from macos_tags import remove as remove_tag_original
-from patoolib import repack_archive, test_archive
+from patoolib import repack_archive as repack_archive_original
+from patoolib import test_archive as test_archive_original
 from rarfile import is_rarfile
 from send2trash import send2trash
 
@@ -56,6 +57,18 @@ def get_all_tags(file: Union[PathLike, str]) -> list[Tag]:
 # Extend `macos_tags.remove` to accept a `PathLike` object
 def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
+
+
+# Extend `patoolib.repack_archive` to accept `PathLike` objects
+def repack_archive(
+    archive: Union[PathLike, str], archive_new: Union[PathLike, str]
+) -> None:
+    repack_archive_original(archive=str(archive), archive_new=str(archive_new))
+
+
+# Extend `patoolib.test_archive` to accept `PathLike` objects
+def test_archive(archive: Union[PathLike, str]) -> None:
+    test_archive_original(archive=str(archive))
 
 
 def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
