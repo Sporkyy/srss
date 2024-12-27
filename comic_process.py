@@ -59,6 +59,13 @@ def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
     remove_tag_original(file=str(file), tag=tag)
 
 
+# Extend `macos_tags.remove` to accept `PathLike` objects
+def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
+    for tag in get_all_tags(file):
+        if tag in tags:
+            remove_tag(tag, file)
+
+
 # Extend `patoolib.repack_archive` to accept `PathLike` objects
 def repack_archive(
     archive: Union[PathLike, str], archive_new: Union[PathLike, str]
@@ -69,12 +76,6 @@ def repack_archive(
 # Extend `patoolib.test_archive` to accept `PathLike` objects
 def test_archive(archive: Union[PathLike, str]) -> None:
     test_archive_original(archive=str(archive))
-
-
-def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
-    for tag in get_all_tags(file):
-        if tag in tags:
-            remove_tag(tag, file)
 
 
 # MARK: The Loop
@@ -154,6 +155,7 @@ for arg in args:
             try:
                 test_archive(src)
                 repack_archive(src, dst)
+                # TODO: Handle network operations where there is no trash
                 send2trash(src)
                 src = dst
             except Exception as e:

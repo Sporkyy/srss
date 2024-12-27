@@ -14,13 +14,14 @@ from os import PathLike, chdir, environ, pathsep
 from os.path import relpath
 from pathlib import Path
 from sys import argv
-from typing import Union
+from typing import Sequence, Union
 
 from macos_tags import Color, Tag
 from macos_tags import add as add_tag_original
 from macos_tags import get_all as get_all_tags_original
 from macos_tags import remove as remove_tag_original
-from patoolib import create_archive, test_archive
+from patoolib import create_archive as create_archive_original
+from patoolib import test_archive as test_archive_original
 from send2trash import send2trash
 
 # MARK: Path
@@ -46,27 +47,44 @@ TAG_FAILED_ARCHIVE_CREATION = Tag(name="Failed Creation", color=RED)
 
 # MARK: Functions
 
-
-# Extend `macos_tags.add` to accept `PathLike` objects
-def add_tag(tag: Tag, file: Union[PathLike, str]) -> None:
-    add_tag_original(tag, file=str(file))
+# Built-In Related Functions
 
 
-# Extend `macos_tags.get_all_tags` to accept `PathLike` objects
-def get_all_tags(file: Union[PathLike, str]) -> list[Tag]:
-    return get_all_tags_original(file=str(file))
-
-
-# Extend `macos_tags.remove` to accept `PathLike` objects
-def remove_tag(tag: Tag, file: Union[PathLike, str]) -> None:
-    remove_tag_original(file=str(file), tag=tag)
+# Useful when using `patoolib.create_archive`
+def get_descendant_file_relative_paths(dir: Union[Path, str]) -> list[str]:
+    dir = Path(dir).resolve()
+    if not dir.is_dir():
+        return []
+    descendants = dir.rglob("*")
+    files = [f for f in descendants if f.is_file()]
+    relative_paths = [relpath(fp, dir) for fp in files]
+    return relative_paths
 
 
 # Extend `glob.glob` to accept `PathLike` objects
-def glob(pathname: Union[PathLike, str], **kwargs) -> list[str]:
-    return glob_original(str(pathname), **kwargs)
+def glob(pathname: Union[PathLike, str], *args, **kwargs) -> list[str]:
+    return glob_original(str(pathname), *args, **kwargs)
 
 
+# Tag Related Functions
+
+
+# Extend `macos_tags.add` to accept `PathLike` objects
+def add_tag(tag: Tag, file: Union[PathLike, str], *args, **kwargs) -> None:
+    add_tag_original(tag, file=str(file), *args, **kwargs)
+
+
+# Extend `macos_tags.get_all_tags` to accept `PathLike` objects
+def get_all_tags(file: Union[PathLike, str], *args, **kwargs) -> list[Tag]:
+    return get_all_tags_original(file=str(file), *args, **kwargs)
+
+
+# Extend `macos_tags.remove` to accept `PathLike` objects
+def remove_tag(tag: Tag, file: Union[PathLike, str], *args, **kwargs) -> None:
+    remove_tag_original(file=str(file), tag=tag, *args, **kwargs)
+
+
+# Convenience function for `macos_tags.remove` on multiple tags
 def remove_tags(tags: list[Tag], file: Union[PathLike, str]) -> None:
     for tag in get_all_tags(file):
         if tag in tags:
@@ -77,14 +95,27 @@ def has_tag(tag: Tag, file: Union[PathLike, str]) -> bool:
     return tag in get_all_tags(file)
 
 
-def get_descendant_file_relative_paths(dir: Union[PathLike, str]) -> list[str]:
-    dir = Path(dir)
-    if not dir.is_dir():
-        return []
-    descendants = glob(dir / "**", recursive=True)
-    files = [f for f in descendants if Path(f).is_file()]
-    relative_paths = [relpath(fp, dir) for fp in files]
-    return relative_paths
+# Patool Related Functions
+
+
+# Extend `patoolib.create_archive` to accept `PathLike` objects
+def create_archive(
+    archive: Union[PathLike, str],
+    filenames: Sequence[Union[PathLike, str]],
+    *args,
+    **kwargs,
+) -> None:
+    create_archive_original(
+        archive=str(archive),
+        filenames=[str(filename) for filename in filenames],
+        *args,
+        **kwargs,
+    )
+
+
+# Extend `patoolib.test_archive` to accept `PathLike` objects
+def test_archive(archive: Union[PathLike, str], *args, **kwargs) -> None:
+    test_archive_original(archive=str(archive), *args, **kwargs)
 
 
 # MARK: The Loop
@@ -142,8 +173,8 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         files = get_descendant_file_relative_paths(src)
-        # print(files)
-        chdir(src)  # Don't forget to change to the source directory
+        print(files)
+        chdir(src)  # !! Don't forget to change to the source directory
         create_archive(dst, files)
     except Exception as e:
         print(f"❗️ Error: {e}")
