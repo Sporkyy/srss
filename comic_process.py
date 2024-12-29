@@ -38,7 +38,7 @@ GREEN, ORANGE, RED, YELLOW = itemgetter("GREEN", "ORANGE", "RED", "YELLOW")(Colo
 
 TAG_VALID = Tag(name="Valid Comic", color=GREEN)
 TAG_CORRUPT = Tag(name="Corrupt Comic", color=RED)
-TAG_COLLISON = Tag(name="Collision", color=YELLOW)
+TAG_COLLISION = Tag(name="Collision", color=YELLOW)
 TAG_REPACK_FAILED = Tag(name="Repack Failed", color=ORANGE)
 
 # MARK: Functions
@@ -81,7 +81,7 @@ def test_archive(archive: Union[PathLike, str]) -> None:
 # MARK: The Loop
 args = argv[1:]
 for arg in args:
-    src = Path(arg)
+    src = Path(arg).resolve()
 
     # Skip if not a file
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -96,14 +96,24 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     dst = src.with_suffix(src.suffix.lower())
     if src != dst:
-        if not dst.exists():
-            print(f"⬇️ {src.name} 👉 Downcased suffix ({src.suffix})")
-            rename(src, dst)
+        # Trying to find a solution that works on macoS and Linux
+        # macos: Case-insensitive _but_ case-preserving
+        # Linux: Case-sensitive _and_ case-preserving
+        try:
+            src.rename(dst)
             src = dst
-        else:
-            print(f"⚠️ {src.name} 👉 Collision ({dst.name})")
-            add_tag(TAG_COLLISON, file=src)
+        except FileExistsError:
+            print(f"⚠️ {src.name} 👉 Collision (Downcase) ({dst.name})")
+            add_tag(TAG_COLLISION, file=src)
             continue
+        # if not dst.exists():
+        #     print(f"⬇️ {src.name} 👉 Downcased suffix ({src.suffix})")
+        #     rename(src, dst)
+        #     src = dst
+        # else:
+        #     print(f"⚠️ {src.name} 👉 Collision (Downcase) ({dst.name})")
+        #     add_tag(TAG_COLLISION, file=src)
+        #     continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Skip if suffix is not a `.cbz` or `.cbr`
@@ -115,7 +125,7 @@ for arg in args:
 
     # Remove existing tags
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    remove_tags([TAG_VALID, TAG_CORRUPT, TAG_COLLISON, TAG_REPACK_FAILED], file=src)
+    remove_tags([TAG_VALID, TAG_CORRUPT, TAG_COLLISION, TAG_REPACK_FAILED], file=src)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Fix extension if necessary
@@ -124,8 +134,8 @@ for arg in args:
     if ".cbr" == src.suffix and is_zipfile(src):
         dst = src.with_suffix(".cbz")
         if dst.exists():
-            add_tag(TAG_COLLISON, file=src)
-            print(f"⚠️ {src.name} 👉 Collision ({dst.name})")
+            add_tag(TAG_COLLISION, file=src)
+            print(f"⚠️ {src.name} 👉 Collision (Extant CBZ) ({dst.name})")
             continue
         else:
             rename(src, dst)
@@ -134,8 +144,8 @@ for arg in args:
     elif ".cbz" == src.suffix and is_rarfile(src):
         dst = src.with_suffix(".cbr")
         if dst.exists():
-            add_tag(TAG_COLLISON, file=src)
-            print(f"⚠️ {src.name} 👉 Collides with {dst.name}")
+            add_tag(TAG_COLLISION, file=src)
+            print(f"⚠️ {src.name} 👉 Collision (Extant CBR) {dst.name}")
             continue
         else:
             rename(src, dst)
@@ -148,8 +158,8 @@ for arg in args:
     if ".cbr" == src.suffix and is_rarfile(src):
         dst = src.with_suffix(".cbz")
         if dst.exists():
-            add_tag(TAG_COLLISON, file=src)
-            print(f"⚠️ Collision 👉 {src.name} 💥 ({dst.name})")
+            add_tag(TAG_COLLISION, file=src)
+            print(f"⚠️ Collision (Repack) 👉 {src.name} 💥 ({dst.name})")
             continue
         else:
             try:
