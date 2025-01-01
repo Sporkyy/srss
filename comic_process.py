@@ -10,7 +10,7 @@
 # MARK: Imports
 
 from operator import itemgetter
-from os import PathLike, environ, pathsep, rename
+from os import PathLike, environ, pathsep, remove, rename
 from pathlib import Path
 from sys import argv
 from typing import Union
@@ -166,7 +166,12 @@ for arg in args:
                 test_archive(src)
                 repack_archive(src, dst)
                 # TODO: Handle network operations where there is no trash
-                send2trash(src)
+                try:
+                    send2trash(src)
+                except Exception as e:
+                    print(f"🛑 {src.name} 👉 Couldn't move to trash")
+                    print(e)
+                    remove(src)
                 src = dst
             except Exception as e:
                 add_tag(TAG_REPACK_FAILED, file=src)
