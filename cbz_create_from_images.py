@@ -12,7 +12,7 @@
 # MARK: Imports
 
 from operator import itemgetter
-from os import PathLike, chdir, environ, pathsep
+from os import PathLike, chdir, environ, pathsep, remove
 from os.path import relpath
 from pathlib import Path, PurePath
 from sys import argv
@@ -107,10 +107,17 @@ for parent, files in grouped.items():
         print(f"✅ Verified: {dst}")
         add_tag(TAG_VALID, file=dst)
         print(f"🗑️ Deleting: {files}")
-        send2trash(files)
+        try:
+            send2trash(files)
+        except Exception as e:
+            for file in files:
+                remove(file)
     except Exception as e:
         print(f"❗️ Error: {e}")
         add_tag(TAG_CORRUPT, file=dst)
         print(f"🗑️ Deleting: {dst}")
-        send2trash(dst)
+        try:
+            send2trash(dst)
+        except Exception as e:
+            remove(dst)
 # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

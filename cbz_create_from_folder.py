@@ -10,7 +10,7 @@
 
 from glob import glob as glob_original
 from operator import itemgetter
-from os import PathLike, chdir, environ, pathsep
+from os import PathLike, chdir, environ, pathsep, remove
 from os.path import relpath
 from pathlib import Path
 from sys import argv
@@ -180,7 +180,10 @@ for arg in args:
         print(f"❗️ Error: {e}")
         add_tag(TAG_FAILED_ARCHIVE_CREATION, file=src)
         if dst.exists():
-            send2trash(dst)
+            try:
+                send2trash(dst)
+            except Exception as e:
+                remove(dst)
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # ✅ Test the CBZ
@@ -198,7 +201,10 @@ for arg in args:
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     try:
         if dst.exists() and has_tag(TAG_VALID, dst):
-            send2trash(src)
+            try:
+                send2trash(src)
+            except Exception as e:
+                remove(src)
     except Exception as e:
         print(f"🛑 {src.name} 👉 {e}")
         add_tag(TAG_CLEANUP_FAILED, file=src)
