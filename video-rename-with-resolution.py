@@ -81,18 +81,18 @@ for arg in args:
     # Get the video resolution
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
     vid_width, vid_height = meta["size"]
+    print(f"📏 {path.name} 👉 {vid_width}x{vid_height}")
+    pattern_resolution = re_compile(rf"\b{vid_height}[pP]\b")
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Skip if the resolution is already in the file name
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    pattern_resolution = re_compile(rf"{vid_height}[pP]")
-    pattern_size = re_compile(rf"{vid_height}x{vid_width}")
-    if re_search(pattern_resolution, path.name) or re_search(pattern_size, path.name):
+    if re_search(pattern_resolution, path.name):
         print(f"🛑 {path.name} 👉 already has resolution")
         continue
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
     # Rename the file to append the resolution
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-    path.rename(path.with_stem(f"{path.stem} [{vid_width}x{vid_height}]"))
+    path.rename(path.with_stem(f"{path.stem} [{vid_height}p]"))
     # =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
